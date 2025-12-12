@@ -63,7 +63,7 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
       />
 
       {/* Product Image */}
-      <div className="relative h-48 bg-gray-50 overflow-hidden rounded-t-lg">
+      <div className="relative h-40 bg-gray-50 overflow-hidden rounded-t-lg">
         {product.image_url ? (
           <img
             src={product.image_url}
@@ -72,19 +72,19 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-300">
-            <Package className="w-12 h-12" />
+            <Package className="w-10 h-10" />
           </div>
         )}
 
         {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2 pointer-events-none">
+        <div className="absolute top-2 left-2 flex flex-col gap-1 pointer-events-none">
           {product.featured && (
-            <span className="badge badge-accent">
+            <span className="badge badge-accent text-[10px] px-1.5 py-0.5">
               Featured
             </span>
           )}
           {hasDiscount && (
-            <span className="badge bg-theme-secondary text-white">
+            <span className="badge bg-theme-secondary text-white text-[10px] px-1.5 py-0.5">
               {Math.round((1 - currentPrice / product.base_price) * 100)}% OFF
             </span>
           )}
@@ -93,7 +93,7 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
         {/* Stock Status Overlay */}
         {!hasAnyStock && (
           <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-            <span className="bg-gray-900 text-white px-3 py-1 text-xs font-semibold rounded">
+            <span className="bg-gray-900 text-white px-2 py-1 text-[10px] font-semibold rounded">
               Out of Stock
             </span>
           </div>
@@ -101,14 +101,14 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
       </div>
 
       {/* Product Details */}
-      <div className="p-4 flex-1 flex flex-col">
-        <h3 className="font-semibold text-theme-text mb-1 line-clamp-2">{product.name}</h3>
-        <p className="text-sm text-gray-500 mb-3 line-clamp-2 min-h-[2.5rem]">{product.description}</p>
+      <div className="p-3 flex-1 flex flex-col">
+        <h3 className="font-semibold text-theme-text text-sm mb-0.5 line-clamp-2 leading-tight">{product.name}</h3>
+        <p className="text-xs text-gray-500 mb-2 line-clamp-2 min-h-[2rem] leading-snug">{product.description}</p>
 
         {/* Variations (Sizes) */}
-        <div className="mb-4 min-h-[4rem]">
+        <div className="mb-2 min-h-[1.5rem]">
           {product.variations && product.variations.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1.5">
               {product.variations.slice(0, 3).map((variation) => {
                 const isOutOfStock = variation.stock_quantity === 0;
                 return (
@@ -122,7 +122,7 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
                     }}
                     disabled={isOutOfStock}
                     className={`
-                      px-2 py-1 text-xs rounded border transition-colors relative z-20
+                      px-1.5 py-0.5 text-[10px] rounded border transition-colors relative z-20
                       ${selectedVariation?.id === variation.id && !isOutOfStock
                         ? 'bg-theme-text text-white border-theme-text'
                         : isOutOfStock
@@ -136,7 +136,7 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
                 );
               })}
               {product.variations.length > 3 && (
-                <span className="text-xs text-gray-400 self-center">
+                <span className="text-[10px] text-gray-400 self-center">
                   +{product.variations.length - 3}
                 </span>
               )}
@@ -147,32 +147,32 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
         <div className="flex-1" />
 
         {/* Price and Cart Actions */}
-        <div className="flex flex-col gap-3 mt-2">
-          <div className="flex items-baseline gap-2">
-            <span className="text-lg font-bold text-theme-text">
+        <div className="flex flex-col gap-2 mt-1">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-base font-bold text-theme-text">
               ₱{currentPrice.toLocaleString('en-PH', { minimumFractionDigits: 0 })}
             </span>
             {hasDiscount && (
-              <span className="text-sm text-gray-400 line-through">
+              <span className="text-xs text-gray-400 line-through">
                 ₱{product.base_price.toLocaleString('en-PH', { minimumFractionDigits: 0 })}
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 sm:gap-2 relative z-20">
+          <div className="flex items-center gap-1.5 relative z-20">
             {/* Quantity Controls */}
-            <div className="flex items-center border border-gray-200 rounded-md flex-shrink-0">
+            <div className="flex items-center border border-gray-200 rounded-md flex-shrink-0 h-8">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   decrementQuantity();
                 }}
-                className="p-1 sm:p-1.5 hover:bg-gray-50 transition-colors"
+                className="w-7 h-full flex items-center justify-center hover:bg-gray-50 transition-colors"
                 disabled={!hasAnyStock}
               >
-                <Minus className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+                <Minus className="w-3 h-3 text-gray-500" />
               </button>
-              <span className="w-6 sm:w-8 text-center text-xs sm:text-sm font-medium text-theme-text">
+              <span className="w-6 text-center text-xs font-medium text-theme-text leading-none">
                 {quantity}
               </span>
               <button
@@ -180,10 +180,10 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
                   e.stopPropagation();
                   incrementQuantity();
                 }}
-                className="p-1 sm:p-1.5 hover:bg-gray-50 transition-colors"
+                className="w-7 h-full flex items-center justify-center hover:bg-gray-50 transition-colors"
                 disabled={quantity >= availableStock || !hasAnyStock}
               >
-                <Plus className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+                <Plus className="w-3 h-3 text-gray-500" />
               </button>
             </div>
 
@@ -199,16 +199,16 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
                 handleAddToCart();
               }}
               disabled={!hasAnyStock || availableStock === 0}
-              className="flex-1 min-w-0 bg-theme-text text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 sm:gap-2"
+              className="flex-1 min-w-0 bg-theme-text text-white h-8 px-2 rounded-md text-xs font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
             >
-              <ShoppingCart className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+              <ShoppingCart className="w-3 h-3 flex-shrink-0" />
               <span>Add</span>
             </button>
           </div>
 
           {/* Cart Status */}
           {cartQuantity > 0 && (
-            <div className="text-center text-xs text-theme-accent font-medium">
+            <div className="text-center text-[10px] text-theme-accent font-medium mt-0.5">
               {cartQuantity} in cart
             </div>
           )}

@@ -5,21 +5,21 @@
 @tailwind utilities;
 
 :root {
-  /* Minimalist Modern Theme */
-  --theme-bg: #F1EFE7;
-  --theme-text: #1E1E1E;
-  --theme-accent: #6DA8A1;
-  --theme-secondary: #C38E70;
-  
-  --primary-black: #1E1E1E;
+  /* Minimalist Modern Theme (The Peppy Lab - Logo Matched) */
+  --theme-bg: #F9E4D4;
+  --theme-text: #9A4444;
+  --theme-accent: #9A4444;
+  --theme-secondary: #E0C0A8;
+
+  --primary-black: #9A4444;
   --primary-white: #ffffff;
-  
-  --gray-50: #F1EFE7;
-  --gray-100: #EAE8DE;
-  --gray-200: #DDDBCF;
-  --gray-300: #C0BEB5;
-  --gray-500: #888888;
-  --gray-900: #1E1E1E;
+
+  --gray-50: #F9E4D4;
+  --gray-100: #FDF1E6;
+  --gray-200: #E0C0A8;
+  --gray-300: #C0A080;
+  --gray-500: #7A3434;
+  --gray-900: #1A0404;
 }
 
 * {
@@ -29,7 +29,7 @@
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Times New Roman', Times, serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--theme-bg);
@@ -37,7 +37,12 @@ body {
   line-height: 1.5;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 600;
   color: var(--theme-text);
   letter-spacing: -0.02em;
@@ -98,8 +103,15 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-fadeIn {
@@ -107,8 +119,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateX(-10px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .animate-slideIn {
@@ -154,8 +173,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Text Gradients (Simplified/Removed for minimalism, keeping simple colors) */

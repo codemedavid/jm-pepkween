@@ -7,37 +7,37 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Minimalist Modern Theme
-        'theme-bg': '#F1EFE7',      // Cream/Base
-        'theme-text': '#1E1E1E',    // Charcoal/Dark
-        'theme-accent': '#6DA8A1',  // Teal
-        'theme-secondary': '#C38E70', // Terracotta
+        // Minimalist Modern Theme (The Peppy Lab - Logo Matched)
+        'theme-bg': '#F9E4D4',      // Soft Peach (Logo Background)
+        'theme-text': '#9A4444',    // Muted Maroon (Logo Text)
+        'theme-accent': '#9A4444',  // Primary Brand Color
+        'theme-secondary': '#E0C0A8', // Darker Peach for variation
 
         // Mapping standard colors to the new theme for compatibility
         primary: {
-          50: '#F1EFE7',
-          100: '#EAE8DE',
-          200: '#DDDBCF',
-          300: '#C38E70', // Using secondary as a mid-tone
-          400: '#9B7460',
-          500: '#1E1E1E', // Using dark as primary
-          600: '#1A1A1A',
-          700: '#151515',
-          800: '#101010',
-          900: '#000000',
+          50: '#F9E4D4',
+          100: '#FDF1E6',
+          200: '#E0C0A8',
+          300: '#C0A080',
+          400: '#9A4444',
+          500: '#9A4444', // Brand Color
+          600: '#7A3434',
+          700: '#5A2424',
+          800: '#3A1414',
+          900: '#1A0404',
         },
-        // Deprecating gold but mapping to secondary/accent to prevent breaks
+        // Deprecating gold but mapping to secondary/accent to prevent breaks (Admin Panel Compass)
         gold: {
-          50: '#F1EFE7',
-          100: '#E0F0EE', // Light teal tint
-          200: '#BFE0DC',
-          300: '#9BCEC7',
-          400: '#6DA8A1', // Accent
-          500: '#C38E70', // Secondary
-          600: '#A8795E',
-          700: '#8D644D',
-          800: '#724F3C',
-          900: '#1E1E1E',
+          50: '#F9E4D4',
+          100: '#FDF1E6',
+          200: '#E0C0A8',
+          300: '#D0B098',
+          400: '#B06060',
+          500: '#9A4444', // Brand Color
+          600: '#7A3434',
+          700: '#5A2424',
+          800: '#3A1414',
+          900: '#1A0404',
         },
         accent: {
           light: '#9BCEC7',
@@ -48,7 +48,9 @@ export default {
         },
       },
       fontFamily: {
-        inter: ['Inter', 'sans-serif'],
+        inter: ['"Times New Roman"', 'Times', 'serif'],
+        sans: ['"Times New Roman"', 'Times', 'serif'],
+        serif: ['"Times New Roman"', 'Times', 'serif'],
       },
       boxShadow: {
         'soft': '0 2px 10px rgba(0, 0, 0, 0.03)',

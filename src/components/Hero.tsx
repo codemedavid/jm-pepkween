@@ -27,20 +27,13 @@ const Hero: React.FC<HeroProps> = ({ onShopAll }) => {
           </div>
 
           {/* Main Heading */}
-          <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold text-theme-text mb-4 md:mb-6 tracking-tight leading-tight">
-            Premium <span className="text-theme-accent">Peptides</span> & Essentials
-            <br className="hidden md:block" />
-            <span className="text-2xl md:text-3xl lg:text-4xl font-medium text-gray-600">— Trusted Quality for Your Journey.</span>
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold text-theme-text mb-6 tracking-tight leading-tight">
+            Welcome to <span className="text-theme-accent">The Peppy Lab</span>
           </h1>
 
-          {/* Tagline */}
-          <p className="text-sm md:text-base text-theme-accent font-medium mb-4 md:mb-6">
-            Quality-tested products. Reliable performance. Trusted by our community.
-          </p>
-
           {/* Subheading */}
-          <p className="text-base md:text-lg text-gray-500 mb-8 md:mb-12 max-w-3xl mx-auto leading-relaxed">
-            Explore our carefully curated selection of high-quality peptides, peptide pens, cartridges, pen needles, and insulin syringes. Each product is personally tested and trusted for purity, safety, and performance — so you can pin with confidence.
+          <p className="text-base md:text-lg text-gray-600 mb-8 md:mb-12 max-w-2xl mx-auto leading-relaxed">
+            At Peppy Lab, we offer high-quality peptides to support weight loss, glowing skin, wellness, and confidence. Because looking and feeling your best doesn't have to be expensive.
           </p>
 
           {/* CTA Buttons */}

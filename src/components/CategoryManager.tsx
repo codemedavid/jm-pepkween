@@ -52,7 +52,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ onBack }) => {
     setFormData({
       id: '',
       name: '',
-      icon: '☕',
+      icon: '🧬',
       sort_order: nextSortOrder,
       active: true
     });
@@ -90,7 +90,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ onBack }) => {
     // Validate ID format (kebab-case)
     const idRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
     if (!idRegex.test(formData.id)) {
-      alert('Category ID must be in kebab-case format (e.g., "hot-drinks", "cold-beverages")');
+      alert('Category ID must be in kebab-case format (e.g., "research-peptides", "topicals")');
       return;
     }
 
@@ -198,7 +198,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ onBack }) => {
                   disabled={currentView === 'edit'}
                 />
                 <p className="text-[10px] sm:text-xs text-gray-500 mt-1.5 sm:mt-2">
-                  {currentView === 'edit' 
+                  {currentView === 'edit'
                     ? 'Category ID cannot be changed after creation'
                     : 'Automatically generated from name, or enter manually in kebab-case format'
                   }
@@ -215,7 +215,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ onBack }) => {
                     value={formData.icon}
                     onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                     className="flex-1 px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500 transition-all text-sm"
-                    placeholder="Enter emoji (e.g., ☕, 🧪, 💊)"
+                    placeholder="Enter emoji (e.g., 🧬, 🧴, 💉)"
                   />
                   <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex items-center justify-center text-2xl sm:text-3xl border border-gray-200 shadow-sm overflow-hidden flex-shrink-0">
                     <span className="leading-none select-none">{formData.icon || '?'}</span>
@@ -300,7 +300,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ onBack }) => {
             {categories.length} {categories.length === 1 ? 'category' : 'categories'} total
           </p>
         </div>
-        
+
         {categories.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 sm:p-12 text-center">
             <div className="max-w-sm mx-auto">
@@ -326,7 +326,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ onBack }) => {
               const productCount = categoryProductCounts[category.id] || 0;
               const hasProducts = productCount > 0;
               const isAllCategory = category.id === 'all';
-              
+
               return (
                 <div
                   key={category.id}
@@ -338,11 +338,11 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ onBack }) => {
                         <GripVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         <span className="text-[10px] sm:text-xs font-mono text-gray-400">#{category.sort_order}</span>
                       </div>
-                      
+
                       <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-xl sm:text-2xl border border-gray-200 overflow-hidden">
                         <span className="leading-none select-none">{category.icon}</span>
                       </div>
-                      
+
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3 mb-1.5 sm:mb-2">
                           <h3 className="font-semibold text-gray-900 text-sm sm:text-base leading-tight break-words">
@@ -365,16 +365,15 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ onBack }) => {
                         <p className="text-[10px] sm:text-xs text-gray-500 font-mono break-all">ID: {category.id}</p>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-2 flex-shrink-0 sm:border-l sm:border-gray-200 sm:pl-3 sm:ml-1">
-                      <span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-semibold transition-colors whitespace-nowrap ${
-                        category.active 
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                          : 'bg-red-50 text-red-700 border border-red-200'
-                      }`}>
+                      <span className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-semibold transition-colors whitespace-nowrap ${category.active
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-red-50 text-red-700 border border-red-200'
+                        }`}>
                         {category.active ? 'Active' : 'Inactive'}
                       </span>
-                      
+
                       <div className="flex items-center gap-0.5 sm:gap-1">
                         <button
                           onClick={() => handleEditCategory(category)}
@@ -383,12 +382,20 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({ onBack }) => {
                         >
                           <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </button>
-                        
+
                         <button
-                          onClick={() => handleDeleteCategory(category.id)}
-                          disabled={hasProducts && !isAllCategory}
+                          onClick={() => {
+                            const message = hasProducts
+                              ? `This category contains ${productCount} products. Deleting it will PERMANENTLY DELETE all these products. Are you sure?`
+                              : 'Are you sure you want to delete this category? This action cannot be undone.';
+
+                            if (confirm(message)) {
+                              handleDeleteCategory(category.id);
+                            }
+                          }}
+                          disabled={isAllCategory}
                           className="p-1.5 sm:p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-gray-400 disabled:hover:bg-transparent"
-                          title={hasProducts && !isAllCategory ? 'Cannot delete category with products' : 'Delete category'}
+                          title={isAllCategory ? 'Cannot delete this category' : 'Delete category'}
                         >
                           <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </button>

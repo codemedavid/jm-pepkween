@@ -131,14 +131,14 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
             .single();
 
           if (varError) throw varError;
-          
+
           if (variation) {
             const newStock = Math.max(0, variation.stock_quantity - item.quantity);
             const { error: updateError } = await supabase
               .from('product_variations')
               .update({ stock_quantity: newStock })
               .eq('id', item.variation_id);
-            
+
             if (updateError) throw updateError;
           }
         } else {
@@ -150,14 +150,14 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
             .single();
 
           if (prodError) throw prodError;
-          
+
           if (product) {
             const newStock = Math.max(0, product.stock_quantity - item.quantity);
             const { error: updateError } = await supabase
               .from('products')
               .update({ stock_quantity: newStock })
               .eq('id', item.product_id);
-            
+
             if (updateError) throw updateError;
           }
         }
@@ -178,10 +178,10 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
       // Refresh orders and products
       await loadOrders();
       await refreshProducts();
-      
+
       // Trigger custom event to refresh inventory sales data
       window.dispatchEvent(new CustomEvent('orderConfirmed'));
-      
+
       alert(`Order confirmed! Stock has been deducted from inventory.`);
       setSelectedOrder(null);
     } catch (error) {
@@ -211,6 +211,30 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
     } catch (error) {
       console.error('Error updating order status:', error);
       alert('Failed to update order status. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleUpdatePaymentStatus = async (orderId: string, newStatus: string) => {
+    try {
+      setIsProcessing(true);
+      const { error } = await supabase
+        .from('orders')
+        .update({
+          payment_status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', orderId);
+
+      if (error) throw error;
+      await loadOrders();
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder({ ...selectedOrder, payment_status: newStatus });
+      }
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+      alert('Failed to update payment status. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -292,6 +316,7 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
         onBack={() => setSelectedOrder(null)}
         onConfirm={() => handleConfirmOrder(selectedOrder)}
         onUpdateStatus={handleUpdateOrderStatus}
+        onUpdatePaymentStatus={handleUpdatePaymentStatus}
         isProcessing={isProcessing}
       />
     );
@@ -332,63 +357,56 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 md:gap-3 mb-4 md:mb-6">
           <button
             onClick={() => setStatusFilter('all')}
-            className={`bg-white rounded-lg md:rounded-xl shadow-md hover:shadow-lg p-2 md:p-3 lg:p-4 border-2 transition-all ${
-              statusFilter === 'all' ? 'border-gold-500 shadow-gold-glow' : 'border-gray-200 hover:border-gold-300'
-            }`}
+            className={`bg-white rounded-lg md:rounded-xl shadow-md hover:shadow-lg p-2 md:p-3 lg:p-4 border-2 transition-all ${statusFilter === 'all' ? 'border-gold-500 shadow-gold-glow' : 'border-gray-200 hover:border-gold-300'
+              }`}
           >
             <p className="text-[10px] md:text-xs text-gray-600 mb-1">All Orders</p>
             <p className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900">{statusCounts.all}</p>
           </button>
           <button
             onClick={() => setStatusFilter('new')}
-            className={`bg-white rounded-lg md:rounded-xl shadow-md hover:shadow-lg p-2 md:p-3 lg:p-4 border-2 transition-all ${
-              statusFilter === 'new' ? 'border-gold-500 shadow-gold-glow' : 'border-gray-200 hover:border-gold-300'
-            }`}
+            className={`bg-white rounded-lg md:rounded-xl shadow-md hover:shadow-lg p-2 md:p-3 lg:p-4 border-2 transition-all ${statusFilter === 'new' ? 'border-gold-500 shadow-gold-glow' : 'border-gray-200 hover:border-gold-300'
+              }`}
           >
             <p className="text-[10px] md:text-xs text-gray-600 mb-1">New</p>
             <p className="text-lg md:text-xl lg:text-2xl font-bold text-gold-600">{statusCounts.new}</p>
           </button>
           <button
             onClick={() => setStatusFilter('confirmed')}
-            className={`bg-white rounded-lg md:rounded-xl shadow-md hover:shadow-lg p-2 md:p-3 lg:p-4 border-2 transition-all ${
-              statusFilter === 'confirmed' ? 'border-gold-500 shadow-gold-glow' : 'border-gray-200 hover:border-gold-300'
-            }`}
+            className={`bg-white rounded-lg md:rounded-xl shadow-md hover:shadow-lg p-2 md:p-3 lg:p-4 border-2 transition-all ${statusFilter === 'confirmed' ? 'border-gold-500 shadow-gold-glow' : 'border-gray-200 hover:border-gold-300'
+              }`}
           >
             <p className="text-[10px] md:text-xs text-gray-600 mb-1">Confirmed</p>
             <p className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900">{statusCounts.confirmed}</p>
           </button>
           <button
             onClick={() => setStatusFilter('processing')}
-            className={`bg-white rounded-lg md:rounded-xl shadow-md hover:shadow-lg p-2 md:p-3 lg:p-4 border-2 transition-all ${
-              statusFilter === 'processing' ? 'border-gold-500 shadow-gold-glow' : 'border-gray-200 hover:border-gold-300'
-            }`}
+            className={`bg-white rounded-lg md:rounded-xl shadow-md hover:shadow-lg p-2 md:p-3 lg:p-4 border-2 transition-all ${statusFilter === 'processing' ? 'border-gold-500 shadow-gold-glow' : 'border-gray-200 hover:border-gold-300'
+              }`}
           >
             <p className="text-[10px] md:text-xs text-gray-600 mb-1">Processing</p>
             <p className="text-lg md:text-xl lg:text-2xl font-bold text-gray-800">{statusCounts.processing}</p>
           </button>
           <button
             onClick={() => setStatusFilter('shipped')}
-            className={`bg-white rounded-lg md:rounded-xl shadow-md hover:shadow-lg p-2 md:p-3 lg:p-4 border-2 transition-all ${
-              statusFilter === 'shipped' ? 'border-gold-500 shadow-gold-glow' : 'border-gray-200 hover:border-gold-300'
-            }`}
+            className={`bg-white rounded-lg md:rounded-xl shadow-md hover:shadow-lg p-2 md:p-3 lg:p-4 border-2 transition-all ${statusFilter === 'shipped' ? 'border-gold-500 shadow-gold-glow' : 'border-gray-200 hover:border-gold-300'
+              }`}
           >
             <p className="text-[10px] md:text-xs text-gray-600 mb-1">Shipped</p>
             <p className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900">{statusCounts.shipped}</p>
           </button>
           <button
             onClick={() => setStatusFilter('delivered')}
-            className={`bg-white rounded-lg md:rounded-xl shadow-md hover:shadow-lg p-2 md:p-3 lg:p-4 border-2 transition-all ${
-              statusFilter === 'delivered' ? 'border-gold-500 shadow-gold-glow' : 'border-gray-200 hover:border-gold-300'
-            }`}
+            className={`bg-white rounded-lg md:rounded-xl shadow-md hover:shadow-lg p-2 md:p-3 lg:p-4 border-2 transition-all ${statusFilter === 'delivered' ? 'border-gold-500 shadow-gold-glow' : 'border-gray-200 hover:border-gold-300'
+              }`}
           >
             <p className="text-[10px] md:text-xs text-gray-600 mb-1">Delivered</p>
             <p className="text-lg md:text-xl lg:text-2xl font-bold text-green-600">{statusCounts.delivered}</p>
           </button>
           <button
             onClick={() => setStatusFilter('cancelled')}
-            className={`bg-white rounded-lg md:rounded-xl shadow-md hover:shadow-lg p-2 md:p-3 lg:p-4 border-2 transition-all ${
-              statusFilter === 'cancelled' ? 'border-red-500' : 'border-gray-200 hover:border-red-300'
-            }`}
+            className={`bg-white rounded-lg md:rounded-xl shadow-md hover:shadow-lg p-2 md:p-3 lg:p-4 border-2 transition-all ${statusFilter === 'cancelled' ? 'border-red-500' : 'border-gray-200 hover:border-red-300'
+              }`}
           >
             <p className="text-[10px] md:text-xs text-gray-600 mb-1">Cancelled</p>
             <p className="text-lg md:text-xl lg:text-2xl font-bold text-red-600">{statusCounts.cancelled}</p>
@@ -461,13 +479,12 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onView, getStatusColor, ge
               <span className="hidden sm:inline">{order.order_status.charAt(0).toUpperCase() + order.order_status.slice(1)}</span>
               <span className="sm:hidden">{order.order_status.charAt(0).toUpperCase()}</span>
             </span>
-            <span className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-semibold ${
-              order.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-gold-100 text-gold-700'
-            }`}>
+            <span className={`px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[10px] md:text-xs font-semibold ${order.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-gold-100 text-gold-700'
+              }`}>
               {order.payment_status === 'paid' ? '✓ Paid' : 'Pending'}
             </span>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 text-xs md:text-sm">
             <div className="min-w-0">
               <span className="text-gray-500 text-[10px] md:text-xs">Customer</span>
@@ -515,6 +532,7 @@ interface OrderDetailsViewProps {
   onBack: () => void;
   onConfirm: () => void;
   onUpdateStatus: (orderId: string, status: string) => void;
+  onUpdatePaymentStatus: (orderId: string, status: string) => void;
   isProcessing: boolean;
 }
 
@@ -523,6 +541,7 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({
   onBack,
   onConfirm,
   onUpdateStatus,
+  onUpdatePaymentStatus,
   isProcessing
 }) => {
   const totalItems = order.order_items.reduce((sum, item) => sum + item.quantity, 0);
@@ -554,14 +573,13 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({
           {/* Order Status */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 md:gap-4">
             <div>
-              <span className={`inline-flex items-center px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-semibold border ${
-                order.order_status === 'new' ? 'bg-gold-100 text-gold-800 border-gold-300' :
+              <span className={`inline-flex items-center px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-semibold border ${order.order_status === 'new' ? 'bg-gold-100 text-gold-800 border-gold-300' :
                 order.order_status === 'confirmed' ? 'bg-gray-100 text-gray-800 border-gray-300' :
-                order.order_status === 'processing' ? 'bg-gray-100 text-gray-800 border-gray-300' :
-                order.order_status === 'shipped' ? 'bg-gray-100 text-gray-800 border-gray-300' :
-                order.order_status === 'delivered' ? 'bg-green-100 text-green-800 border-green-300' :
-                'bg-red-100 text-red-800 border-red-300'
-              }`}>
+                  order.order_status === 'processing' ? 'bg-gray-100 text-gray-800 border-gray-300' :
+                    order.order_status === 'shipped' ? 'bg-gray-100 text-gray-800 border-gray-300' :
+                      order.order_status === 'delivered' ? 'bg-green-100 text-green-800 border-green-300' :
+                        'bg-red-100 text-red-800 border-red-300'
+                }`}>
                 {order.order_status.charAt(0).toUpperCase() + order.order_status.slice(1)}
               </span>
             </div>
@@ -660,10 +678,9 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({
             <h3 className="font-bold text-gray-900 mb-2 md:mb-3 text-sm md:text-base">Payment Information</h3>
             <div className="bg-gray-50 rounded-lg p-3 md:p-4 space-y-1.5 md:space-y-2 text-xs md:text-sm">
               <p><span className="font-semibold">Method:</span> {order.payment_method_name || 'N/A'}</p>
-              <p className="flex items-center gap-2 flex-wrap"><span className="font-semibold">Status:</span> 
-                <span className={`px-2 py-1 rounded-full text-[10px] md:text-xs font-semibold ${
-                  order.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-gold-100 text-gold-700'
-                }`}>
+              <p className="flex items-center gap-2 flex-wrap"><span className="font-semibold">Status:</span>
+                <span className={`px-2 py-1 rounded-full text-[10px] md:text-xs font-semibold ${order.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-gold-100 text-gold-700'
+                  }`}>
                   {order.payment_status === 'paid' ? 'Paid' : 'Pending'}
                 </span>
               </p>
@@ -700,54 +717,63 @@ const OrderDetailsView: React.FC<OrderDetailsViewProps> = ({
             </div>
           )}
 
-          {/* Status Update Buttons */}
-          {order.order_status !== 'new' && order.order_status !== 'cancelled' && order.order_status !== 'delivered' && (
-            <div className="border-t-2 border-gray-200 pt-3 md:pt-4">
-              <h3 className="font-bold text-gray-900 mb-2 md:mb-3 text-sm md:text-base">Update Status</h3>
-              <div className="flex flex-wrap gap-2">
-                {order.order_status === 'confirmed' && (
-                  <button
-                    onClick={() => onUpdateStatus(order.id, 'processing')}
+          {/* Order Management Actions */}
+          <div className="border-t-2 border-gray-200 pt-3 md:pt-4">
+            <h3 className="font-bold text-gray-900 mb-2 md:mb-3 text-sm md:text-base">Order Management</h3>
+            <div className="bg-gray-50 rounded-lg p-3 md:p-4 space-y-4">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Delivery Status Dropdown */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Delivery Status</label>
+                  <select
+                    value={order.order_status}
+                    onChange={(e) => onUpdateStatus(order.id, e.target.value)}
                     disabled={isProcessing}
-                    className="px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-gray-800 to-black hover:from-gray-900 hover:to-black text-white rounded-lg transition-colors disabled:opacity-50 text-xs md:text-sm font-medium shadow-md hover:shadow-lg border border-gold-500/20"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-gold-500 focus:border-gold-500 disabled:opacity-50"
                   >
-                    Mark as Processing
-                  </button>
-                )}
-                {order.order_status === 'processing' && (
-                  <button
-                    onClick={() => onUpdateStatus(order.id, 'shipped')}
+                    <option value="new">Unfulfilled (New)</option>
+                    <option value="processing">Ready / Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+
+                {/* Payment Status Dropdown */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Payment Status</label>
+                  <select
+                    value={order.payment_status}
+                    onChange={(e) => onUpdatePaymentStatus(order.id, e.target.value)}
                     disabled={isProcessing}
-                    className="px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-gray-800 to-black hover:from-gray-900 hover:to-black text-white rounded-lg transition-colors disabled:opacity-50 text-xs md:text-sm font-medium shadow-md hover:shadow-lg border border-gold-500/20"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:ring-2 focus:ring-gold-500 focus:border-gold-500 disabled:opacity-50"
                   >
-                    Mark as Shipped
-                  </button>
-                )}
-                {order.order_status === 'shipped' && (
-                  <button
-                    onClick={() => onUpdateStatus(order.id, 'delivered')}
-                    disabled={isProcessing}
-                    className="px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg transition-colors disabled:opacity-50 text-xs md:text-sm font-medium shadow-md hover:shadow-lg"
-                  >
-                    Mark as Delivered
-                  </button>
-                )}
-                {(order.order_status === 'new' || order.order_status === 'confirmed' || order.order_status === 'processing') && (
-                  <button
-                    onClick={() => {
-                      if (confirm('Are you sure you want to cancel this order?')) {
-                        onUpdateStatus(order.id, 'cancelled');
-                      }
-                    }}
-                    disabled={isProcessing}
-                    className="px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-colors disabled:opacity-50 text-xs md:text-sm font-medium shadow-md hover:shadow-lg"
-                  >
-                    Cancel Order
-                  </button>
-                )}
+                    <option value="pending">Pending</option>
+                    <option value="paid">Payment Confirmed</option>
+                  </select>
+                </div>
               </div>
+
+              {/* Stock Deduction Action (Only for New Orders) */}
+              {order.order_status === 'new' && (
+                <div className="pt-2">
+                  <button
+                    onClick={onConfirm}
+                    disabled={isProcessing}
+                    className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg transition-colors font-medium text-xs md:text-sm flex items-center justify-center gap-2 disabled:opacity-50 shadow-md hover:shadow-lg"
+                  >
+                    <CheckCircle className="w-4 h-4 md:w-5 md:h-5" />
+                    <span>{isProcessing ? 'Processing...' : 'Confirm Order & Deduct Stock'}</span>
+                  </button>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
+                    * Confirming will automatically set status to "Confirmed" and Payment to "Paid", and deduct inventory.
+                  </p>
+                </div>
+              )}
+
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

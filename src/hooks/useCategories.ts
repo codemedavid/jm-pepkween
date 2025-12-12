@@ -19,7 +19,7 @@ export const useCategories = () => {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      
+
       const { data, error: fetchError } = await supabase
         .from('categories')
         .select('*')
@@ -85,29 +85,67 @@ export const useCategories = () => {
 
   const deleteCategory = async (id: string) => {
     try {
-      // Check if category has products
-      const { data: products, error: checkError } = await supabase
+      console.log('Starting deletion for category:', id);
+
+      // 1. Get all products in this category to delete their variations first (just in case cascade is missing)
+      const { data: products, error: productsFetchError } = await supabase
         .from('products')
         .select('id')
-        .eq('category', id)
-        .limit(1);
+        .eq('category', id);
 
-      if (checkError) throw checkError;
-
-      if (products && products.length > 0) {
-        throw new Error('Cannot delete category that contains products. Please move or delete the products first.');
+      if (productsFetchError) {
+        console.error('Error fetching products during delete:', productsFetchError);
+        throw new Error('Failed to fetch associated products');
       }
 
-      const { error: deleteError } = await supabase
+      const productIds = products?.map(p => p.id) || [];
+      console.log(`Found ${productIds.length} products to clean up`);
+
+      if (productIds.length > 0) {
+        // 2. Delete variations for these products
+        const { error: variationsDeleteError } = await supabase
+          .from('product_variations')
+          .delete()
+          .in('product_id', productIds);
+
+        if (variationsDeleteError) {
+          console.error('Error deleting variations:', variationsDeleteError);
+          // Don't throw here, usually CASCADE handles this, but we log if manual delete fails
+        }
+
+        // 3. Delete the products
+        const { error: productsDeleteError } = await supabase
+          .from('products')
+          .delete()
+          .eq('category', id);
+
+        if (productsDeleteError) {
+          console.error('Error deleting products:', productsDeleteError);
+          throw new Error(`Failed to delete products: ${productsDeleteError.message}`);
+        }
+      }
+
+      // 4. Finally delete the category
+      const { error: deleteError, count: deletedCount } = await supabase
         .from('categories')
-        .delete()
+        .delete({ count: 'exact' }) // Request exact count
         .eq('id', id);
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('Error deleting category record:', deleteError);
+        throw deleteError;
+      }
+
+      console.log(`Deleted category rows: ${deletedCount}`);
+
+      if (deletedCount === 0) {
+        throw new Error('Database reported success but 0 records were deleted. This usually means Row Level Security (RLS) is blocking the delete operation. Check your Supabase policies.');
+      }
 
       await fetchCategories();
+      console.log('Category deleted successfully');
     } catch (err) {
-      console.error('Error deleting category:', err);
+      console.error('Error in deleteCategory:', err);
       throw err;
     }
   };
