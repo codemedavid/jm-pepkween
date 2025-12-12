@@ -27,21 +27,35 @@ const Menu: React.FC<MenuProps> = ({ menuItems, addToCart, cartItems }) => {
     product.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Identify Peptide Category ID (assuming it contains "peptide" in name)
-  const peptideCategoryIds = categories
-    .filter(c => c.name.toLowerCase().includes('peptide'))
-    .map(c => c.id);
+  // Create a map of category ID to sort order for faster lookups
+  const categoryOrder = React.useMemo(() => {
+    const orderMap: Record<string, number> = {};
+    categories.forEach(cat => {
+      orderMap[cat.id] = cat.sort_order;
+    });
+    return orderMap;
+  }, [categories]);
 
   // Sort products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    // Priority: Peptide products first
-    const isAPeptide = peptideCategoryIds.includes(a.category);
-    const isBPeptide = peptideCategoryIds.includes(b.category);
+    // 1. Primary Sort: Category Sort Order
+    // If categories are loaded, use their defined sort order
+    const orderA = categoryOrder[a.category] ?? 999;
+    const orderB = categoryOrder[b.category] ?? 999;
+
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+
+    // Fallback: If category order not found (e.g. loading), prioritized 'peptide' text in category ID
+    // This ensures Peptides show first even if full category data isn't ready
+    const isAPeptide = a.category.toLowerCase().includes('peptide');
+    const isBPeptide = b.category.toLowerCase().includes('peptide');
 
     if (isAPeptide && !isBPeptide) return -1;
     if (!isAPeptide && isBPeptide) return 1;
 
-    // Secondary Sort: User selection
+    // 2. Secondary Sort: User selection
     switch (sortBy) {
       case 'name':
         return a.name.localeCompare(b.name);

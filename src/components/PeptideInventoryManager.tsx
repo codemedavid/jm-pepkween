@@ -4,6 +4,7 @@ import type { Product } from '../types';
 import { useMenu } from '../hooks/useMenu';
 import { useCategories } from '../hooks/useCategories';
 import { supabase } from '../lib/supabase';
+import VariationManager from './VariationManager';
 
 interface PeptideInventoryManagerProps {
   onBack: () => void;
@@ -18,17 +19,19 @@ const PeptideInventoryManager: React.FC<PeptideInventoryManagerProps> = ({ onBac
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
 
+  const [managingVariationsProduct, setManagingVariationsProduct] = useState<Product | null>(null);
+
   // Load confirmed orders for sales calculation
   useEffect(() => {
     loadOrders();
-    
+
     // Listen for order confirmation events to refresh sales data
     const handleOrderConfirmed = () => {
       loadOrders();
     };
-    
+
     window.addEventListener('orderConfirmed', handleOrderConfirmed);
-    
+
     return () => {
       window.removeEventListener('orderConfirmed', handleOrderConfirmed);
     };
@@ -70,10 +73,10 @@ const PeptideInventoryManager: React.FC<PeptideInventoryManagerProps> = ({ onBac
     }, 0);
 
     const totalInventoryValue = products.reduce((sum, product) => {
-      const price = product.discount_active && product.discount_price 
-        ? product.discount_price 
+      const price = product.discount_active && product.discount_price
+        ? product.discount_price
         : product.base_price;
-      
+
       // For products with variations, sum up variation stock values
       if (product.variations && product.variations.length > 0) {
         const variationValue = product.variations.reduce((vSum, variation) => {
@@ -81,12 +84,12 @@ const PeptideInventoryManager: React.FC<PeptideInventoryManagerProps> = ({ onBac
         }, 0);
         return sum + variationValue;
       }
-      
+
       return sum + (product.stock_quantity * price);
     }, 0);
 
     const totalItems = products.length;
-    
+
     const lowStockItems = products.filter(product => {
       if (product.variations && product.variations.length > 0) {
         // Check if any variation is low stock (less than 5)
@@ -116,7 +119,7 @@ const PeptideInventoryManager: React.FC<PeptideInventoryManagerProps> = ({ onBac
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(p => 
+      filtered = filtered.filter(p =>
         p.name.toLowerCase().includes(query) ||
         p.description.toLowerCase().includes(query)
       );
@@ -164,7 +167,7 @@ const PeptideInventoryManager: React.FC<PeptideInventoryManagerProps> = ({ onBac
           .from('product_variations')
           .update({ stock_quantity: newStock })
           .eq('id', variationId);
-        
+
         if (error) throw error;
       } else {
         // Update product stock
@@ -172,10 +175,10 @@ const PeptideInventoryManager: React.FC<PeptideInventoryManagerProps> = ({ onBac
           .from('products')
           .update({ stock_quantity: newStock })
           .eq('id', productId);
-        
+
         if (error) throw error;
       }
-      
+
       await refreshProducts();
       alert('Stock updated successfully!');
     } catch (error) {
@@ -355,11 +358,22 @@ const PeptideInventoryManager: React.FC<PeptideInventoryManagerProps> = ({ onBac
                 onUpdateStock={handleUpdateStock}
                 onDeleteProduct={handleDeleteProduct}
                 onDeleteVariation={handleDeleteVariation}
+                onManageVariations={() => setManagingVariationsProduct(product)}
               />
             ))
           )}
         </div>
       </div>
+
+      {managingVariationsProduct && (
+        <VariationManager
+          product={managingVariationsProduct}
+          onClose={() => {
+            setManagingVariationsProduct(null);
+            refreshProducts(); // Refresh to show new variations
+          }}
+        />
+      )}
     </div>
   );
 };
@@ -371,45 +385,172 @@ interface InventoryItemCardProps {
   onUpdateStock: (productId: string, variationId: string | null, newStock: number) => void;
   onDeleteProduct: (productId: string, productName: string) => void;
   onDeleteVariation: (variationId: string, variationName: string) => void;
+  onManageVariations: () => void;
 }
 
-const InventoryItemCard: React.FC<InventoryItemCardProps> = ({ product, categories, onUpdateStock, onDeleteProduct, onDeleteVariation }) => {
+const InventoryItemCard: React.FC<InventoryItemCardProps> = ({ product, categories, onUpdateStock, onDeleteProduct, onDeleteVariation, onManageVariations }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editStock, setEditStock] = useState<{ [key: string]: number }>({});
 
-  // If product has variations, show each variation separately
+  // Helper to render basic info for variation-less products
+  const renderBasicProductInfo = () => {
+    const stockKey = `product-${product.id}`;
+    const currentStock = editStock[stockKey] !== undefined
+      ? editStock[stockKey]
+      : product.stock_quantity;
+
+    const price = product.discount_active && product.discount_price
+      ? product.discount_price
+      : product.base_price;
+
+    return (
+      <div className="bg-white rounded-lg md:rounded-xl shadow-md p-3 md:p-4 border border-gold-300/30 hover:border-gold-400/50 transition-all">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <h3 className="font-bold text-gray-900 text-sm md:text-base">{product.name}</h3>
+              <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-[10px] md:text-xs font-medium">
+                {categories.find(c => c.id === product.category)?.name || product.category}
+              </span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] md:text-xs font-semibold ${product.stock_quantity > 0
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-red-100 text-red-700'
+                }`}>
+                {product.stock_quantity > 0 ? 'IN STOCK' : 'OUT OF STOCK'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-xs md:text-sm">
+              <div>
+                <span className="text-gray-500 text-[10px] md:text-xs">Price per Vial</span>
+                <p className="font-semibold text-gray-900">₱{price.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
+              </div>
+              <div>
+                <span className="text-gray-500 text-[10px] md:text-xs">Quantity</span>
+                <p className="font-semibold text-gray-900">{product.stock_quantity} vials</p>
+              </div>
+              <div>
+                <span className="text-gray-500 text-[10px] md:text-xs">Total Value</span>
+                <p className="font-semibold text-gold-600">
+                  ₱{(product.stock_quantity * price).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <div>
+                <span className="text-gray-500 text-[10px] md:text-xs">Expiration</span>
+                <p className="font-semibold text-gray-900">N/A</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={onManageVariations}
+              className="w-full px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-md font-medium flex items-center justify-center gap-1.5 text-xs md:text-sm transition-colors shadow-sm"
+            >
+              <Layers className="w-3 h-3 md:w-4 md:h-4" />
+              Variants
+            </button>
+
+            {isEditing && editStock[stockKey] !== undefined ? (
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="number"
+                  value={currentStock}
+                  onChange={(e) => setEditStock({ ...editStock, [stockKey]: parseInt(e.target.value) || 0 })}
+                  className="w-16 md:w-20 px-2 py-1 text-xs md:text-sm border border-gray-300 rounded text-center focus:border-gold-500 focus:outline-none focus:ring-1 focus:ring-gold-500"
+                  min="0"
+                />
+                <button
+                  onClick={() => {
+                    onUpdateStock(product.id, null, currentStock);
+                    setIsEditing(false);
+                    setEditStock({});
+                  }}
+                  className="px-2 md:px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditStock({});
+                  }}
+                  className="px-2 md:px-3 py-1 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setIsEditing(true);
+                    setEditStock({ [stockKey]: product.stock_quantity });
+                  }}
+                  className="flex-1 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-black rounded-md font-medium flex items-center justify-center gap-1.5 text-xs md:text-sm transition-colors"
+                >
+                  <Edit className="w-3 h-3 md:w-4 md:h-4" />
+                  Edit
+                </button>
+                <button
+                  onClick={() => onDeleteProduct(product.id, product.name)}
+                  className="px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-md font-medium flex items-center justify-center gap-1.5 text-xs md:text-sm transition-colors"
+                >
+                  <Trash2 className="w-3 h-3 md:w-4 md:h-4" />
+                  Delete
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // If product has variations, show each variation separately but group them
   if (product.variations && product.variations.length > 0) {
     return (
-      <>
+      <div className="space-y-2">
+        {/* Header for the product group */}
+        <div className="flex items-center justify-between bg-gray-50 p-2 rounded-t-lg border border-gray-200">
+          <h3 className="font-bold text-gray-700 ml-2">{product.name} - Variations</h3>
+          <button
+            onClick={onManageVariations}
+            className="px-3 py-1 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded text-xs font-semibold flex items-center gap-1 transition-colors"
+          >
+            <Plus className="w-3 h-3" />
+            Add/Manage
+          </button>
+        </div>
+
         {product.variations.map((variation) => {
           const stockKey = `variation-${variation.id}`;
-          const currentStock = editStock[stockKey] !== undefined 
-            ? editStock[stockKey] 
+          const currentStock = editStock[stockKey] !== undefined
+            ? editStock[stockKey]
             : variation.stock_quantity;
-          
+
           return (
             <div
               key={variation.id}
-              className="bg-white rounded-lg md:rounded-xl shadow-md p-3 md:p-4 border border-gold-300/30 hover:border-gold-400/50 transition-all"
+              className="bg-white rounded-lg md:rounded-xl shadow-md p-3 md:p-4 border border-gold-300/30 hover:border-gold-400/50 transition-all ml-4 border-l-4 border-l-gold-500"
             >
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
                 <div className="flex-1">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
                     <h3 className="font-bold text-gray-900 text-sm md:text-base">
-                      {product.name} {variation.name}
+                      {variation.name}
                     </h3>
                     <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-[10px] md:text-xs font-medium">
                       {categories.find(c => c.id === product.category)?.name || product.category}
                     </span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] md:text-xs font-semibold ${
-                      variation.stock_quantity > 0 
-                        ? 'bg-green-100 text-green-700' 
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] md:text-xs font-semibold ${variation.stock_quantity > 0
+                        ? 'bg-green-100 text-green-700'
                         : 'bg-red-100 text-red-700'
-                    }`}>
+                      }`}>
                       {variation.stock_quantity > 0 ? 'IN STOCK' : 'OUT OF STOCK'}
                     </span>
                   </div>
-                  
+
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-xs md:text-sm">
                     <div>
                       <span className="text-gray-500 text-[10px] md:text-xs">Price per Vial</span>
@@ -488,115 +629,12 @@ const InventoryItemCard: React.FC<InventoryItemCardProps> = ({ product, categori
             </div>
           );
         })}
-      </>
+      </div>
     );
   }
 
-  // Product without variations
-  const stockKey = `product-${product.id}`;
-  const currentStock = editStock[stockKey] !== undefined 
-    ? editStock[stockKey] 
-    : product.stock_quantity;
-  
-  const price = product.discount_active && product.discount_price 
-    ? product.discount_price 
-    : product.base_price;
-
-  return (
-    <div className="bg-white rounded-lg md:rounded-xl shadow-md p-3 md:p-4 border border-gold-300/30 hover:border-gold-400/50 transition-all">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
-        <div className="flex-1">
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <h3 className="font-bold text-gray-900 text-sm md:text-base">{product.name}</h3>
-            <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full text-[10px] md:text-xs font-medium">
-              {categories.find(c => c.id === product.category)?.name || product.category}
-            </span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] md:text-xs font-semibold ${
-              product.stock_quantity > 0 
-                ? 'bg-green-100 text-green-700' 
-                : 'bg-red-100 text-red-700'
-            }`}>
-              {product.stock_quantity > 0 ? 'IN STOCK' : 'OUT OF STOCK'}
-            </span>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-xs md:text-sm">
-            <div>
-              <span className="text-gray-500 text-[10px] md:text-xs">Price per Vial</span>
-              <p className="font-semibold text-gray-900">₱{price.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</p>
-            </div>
-            <div>
-              <span className="text-gray-500 text-[10px] md:text-xs">Quantity</span>
-              <p className="font-semibold text-gray-900">{product.stock_quantity} vials</p>
-            </div>
-            <div>
-              <span className="text-gray-500 text-[10px] md:text-xs">Total Value</span>
-              <p className="font-semibold text-gold-600">
-                ₱{(product.stock_quantity * price).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-              </p>
-            </div>
-            <div>
-              <span className="text-gray-500 text-[10px] md:text-xs">Expiration</span>
-              <p className="font-semibold text-gray-900">N/A</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          {isEditing && editStock[stockKey] !== undefined ? (
-            <div className="flex items-center gap-1.5">
-              <input
-                type="number"
-                value={currentStock}
-                onChange={(e) => setEditStock({ ...editStock, [stockKey]: parseInt(e.target.value) || 0 })}
-                className="w-16 md:w-20 px-2 py-1 text-xs md:text-sm border border-gray-300 rounded text-center focus:border-gold-500 focus:outline-none focus:ring-1 focus:ring-gold-500"
-                min="0"
-              />
-              <button
-                onClick={() => {
-                  onUpdateStock(product.id, null, currentStock);
-                  setIsEditing(false);
-                  setEditStock({});
-                }}
-                className="px-2 md:px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600 transition-colors"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => {
-                  setIsEditing(false);
-                  setEditStock({});
-                }}
-                className="px-2 md:px-3 py-1 bg-gray-300 text-gray-700 rounded text-xs hover:bg-gray-400 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <button
-                onClick={() => {
-                  setIsEditing(true);
-                  setEditStock({ [stockKey]: product.stock_quantity });
-                }}
-                className="flex-1 px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-600 hover:to-gold-700 text-black rounded-md font-medium flex items-center justify-center gap-1.5 text-xs md:text-sm transition-colors"
-              >
-                <Edit className="w-3 h-3 md:w-4 md:h-4" />
-                Edit
-              </button>
-              <button
-                onClick={() => onDeleteProduct(product.id, product.name)}
-                className="px-3 md:px-4 py-1.5 md:py-2 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-md font-medium flex items-center justify-center gap-1.5 text-xs md:text-sm transition-colors"
-              >
-                <Trash2 className="w-3 h-3 md:w-4 md:h-4" />
-                Delete
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  // Fallback for single products
+  return renderBasicProductInfo();
 };
 
 export default PeptideInventoryManager;
