@@ -10,6 +10,7 @@ import Checkout from './components/Checkout';
 import FloatingCartButton from './components/FloatingCartButton';
 import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
+import COA from './components/COA';
 import { useMenu } from './hooks/useMenu';
 
 function MainApp() {
@@ -97,6 +98,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<MainApp />} />
+        <Route path="/coa" element={<COA />} />
 
         <Route path="/admin" element={<AdminDashboard />} />
       </Routes>

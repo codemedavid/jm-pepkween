@@ -104,3 +104,10 @@ export interface Voucher {
   expires_at: string | null;
   created_at: string;
 }
+
+export interface COA {
+  id: string;
+  title: string;
+  image_url: string;
+  created_at: string;
+}

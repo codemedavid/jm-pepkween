@@ -35,6 +35,7 @@ body {
   background-color: var(--theme-bg);
   color: var(--theme-text);
   line-height: 1.5;
+  font-weight: 700;
 }
 
 h1,

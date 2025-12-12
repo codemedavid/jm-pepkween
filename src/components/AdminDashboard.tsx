@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Save, X, ArrowLeft, TrendingUp, Package, Users, FolderOpen, CreditCard, Sparkles, Layers, Shield, RefreshCw, Warehouse, ShoppingCart, HelpCircle, MapPin, Ticket } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, ArrowLeft, TrendingUp, Package, Users, FolderOpen, CreditCard, Sparkles, Layers, RefreshCw, Warehouse, ShoppingCart, MapPin, Ticket, FileCheck } from 'lucide-react';
 import type { Product } from '../types';
 import { useMenu } from '../hooks/useMenu';
 import { useCategories } from '../hooks/useCategories';
@@ -11,6 +11,7 @@ import PeptideInventoryManager from './PeptideInventoryManager';
 import OrdersManager from './OrdersManager';
 import ShippingManager from './ShippingManager';
 import VoucherManager from './VoucherManager';
+import COAManager from './COAManager';
 
 const AdminDashboard: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -20,7 +21,7 @@ const AdminDashboard: React.FC = () => {
   const [loginError, setLoginError] = useState('');
   const { products, loading, addProduct, updateProduct, deleteProduct, refreshProducts } = useMenu();
   const { categories } = useCategories();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'products' | 'add' | 'edit' | 'categories' | 'payments' | 'inventory' | 'orders' | 'shipping' | 'vouchers'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'products' | 'add' | 'edit' | 'categories' | 'payments' | 'inventory' | 'orders' | 'shipping' | 'vouchers' | 'coa'>('dashboard');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [managingVariationsProductId, setManagingVariationsProductId] = useState<string | null>(null);
@@ -1080,6 +1081,15 @@ const AdminDashboard: React.FC = () => {
     return <ShippingManager onBack={() => setCurrentView('dashboard')} />;
   }
 
+  // COA View
+  if (currentView === 'coa') {
+    return (
+      <div className="min-h-screen bg-theme-bg p-4 md:p-8">
+        <COAManager onBack={() => setCurrentView('dashboard')} />
+      </div>
+    );
+  }
+
   // Dashboard View
   return (
     <>
@@ -1269,6 +1279,15 @@ const AdminDashboard: React.FC = () => {
                     <Ticket className="h-4 w-4 text-pink-600" />
                   </div>
                   <span className="text-sm font-medium text-gray-700">Manage Vouchers</span>
+                </button>
+                <button
+                  onClick={() => setCurrentView('coa')}
+                  className="w-full flex items-center gap-3 p-2 text-left hover:bg-gray-50 rounded-lg transition-all"
+                >
+                  <div className="p-1.5 bg-blue-50 rounded-lg">
+                    <FileCheck className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Manage COAs</span>
                 </button>
               </div>
             </div>
