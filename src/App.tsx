@@ -10,10 +10,7 @@ import Checkout from './components/Checkout';
 import FloatingCartButton from './components/FloatingCartButton';
 import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
-import COA from './components/COA';
-import FAQ from './components/FAQ';
 import { useMenu } from './hooks/useMenu';
-import { useCOAPageSetting } from './hooks/useCOAPageSetting';
 
 function MainApp() {
   const cart = useCart();
@@ -96,14 +93,11 @@ function MainApp() {
 }
 
 function App() {
-  const { coaPageEnabled } = useCOAPageSetting();
-
   return (
     <Router>
       <Routes>
         <Route path="/" element={<MainApp />} />
-        {coaPageEnabled && <Route path="/coa" element={<COA />} />}
-        <Route path="/faq" element={<FAQ />} />
+
         <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </Router>

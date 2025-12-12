@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useCOAPageSetting } from '../hooks/useCOAPageSetting';
-import { ShoppingCart, Menu, X, MessageCircle, HelpCircle } from 'lucide-react';
+import { ShoppingCart, Menu, X, MessageCircle } from 'lucide-react';
 
 interface HeaderProps {
   cartItemsCount: number;
@@ -10,11 +9,9 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClick }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { coaPageEnabled } = useCOAPageSetting();
 
-  // Contact Links
-  const whatsappMessage = encodeURIComponent('Hi! I am interested in your products.');
-  const whatsappUrl = `https://wa.me/639062349763?text=${whatsappMessage}`;
+
+
 
   return (
     <>
@@ -57,28 +54,15 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                 >
                   Products
                 </button>
-                {coaPageEnabled && (
-                  <a
-                    href="/coa"
-                    className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
-                  >
-                    Lab Reports
-                  </a>
-                )}
+
                 <a
-                  href="/faq"
-                  className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
-                >
-                  FAQ
-                </a>
-                <a
-                  href={whatsappUrl}
+                  href="https://t.me/anntpl"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-gray-600 hover:text-theme-accent transition-colors text-sm font-medium"
                 >
                   <MessageCircle className="w-4 h-4" />
-                  WhatsApp
+                  Contact
                 </a>
               </nav>
 
@@ -130,32 +114,27 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                 >
                   Products
                 </button>
-                {coaPageEnabled && (
-                  <a
-                    href="/coa"
-                    className="text-left text-theme-text font-medium text-base hover:text-theme-accent transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Lab Reports
-                  </a>
-                )}
-                <a
-                  href="/faq"
-                  className="text-left text-theme-text font-medium text-base hover:text-theme-accent transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  FAQ
-                </a>
+
                 <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
                   <a
-                    href={whatsappUrl}
+                    href="https://t.me/anntpl"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 text-gray-600 hover:text-theme-accent transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <MessageCircle className="w-5 h-5" />
-                    <span className="text-sm font-medium">WhatsApp</span>
+                    <span className="text-sm font-medium">Contact Seller</span>
+                  </a>
+                  <a
+                    href="https://t.me/+I1VczGgB-JJlMmU9"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-gray-600 hover:text-theme-accent transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    <span className="text-sm font-medium">Join Community</span>
                   </a>
                 </div>
               </div>

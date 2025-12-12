@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import MenuItemCard from './MenuItemCard';
 import Hero from './Hero';
+import TrustSection from './TrustSection';
 import ProductDetailModal from './ProductDetailModal';
 import type { Product, ProductVariation, CartItem } from '../types';
 import { Search, Filter, Package } from 'lucide-react';
@@ -140,6 +141,8 @@ const Menu: React.FC<MenuProps> = ({ menuItems, addToCart, cartItems }) => {
             </div>
           )}
         </div>
+
+        <TrustSection />
       </div>
     </>
   );

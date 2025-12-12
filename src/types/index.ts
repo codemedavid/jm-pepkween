@@ -91,3 +91,16 @@ export interface OrderDetails {
   payment_method: string;
   notes?: string;
 }
+
+export interface Voucher {
+  id: string;
+  code: string;
+  discount_type: 'percentage' | 'fixed';
+  discount_value: number;
+  min_spend: number;
+  usage_limit: number | null;
+  times_used: number;
+  is_active: boolean;
+  expires_at: string | null;
+  created_at: string;
+}

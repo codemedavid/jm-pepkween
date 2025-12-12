@@ -8,14 +8,14 @@ export default {
     extend: {
       colors: {
         // Minimalist Modern Theme (The Peppy Lab - Logo Matched)
-        'theme-bg': '#F9E4D4',      // Soft Peach (Logo Background)
+        'theme-bg': '#FFFAF8',      // Light Light Peach (Updated for ease on eyes)
         'theme-text': '#9A4444',    // Muted Maroon (Logo Text)
         'theme-accent': '#9A4444',  // Primary Brand Color
         'theme-secondary': '#E0C0A8', // Darker Peach for variation
 
         // Mapping standard colors to the new theme for compatibility
         primary: {
-          50: '#F9E4D4',
+          50: '#FFF5EE',
           100: '#FDF1E6',
           200: '#E0C0A8',
           300: '#C0A080',
@@ -28,7 +28,7 @@ export default {
         },
         // Deprecating gold but mapping to secondary/accent to prevent breaks (Admin Panel Compass)
         gold: {
-          50: '#F9E4D4',
+          50: '#FFF5EE',
           100: '#FDF1E6',
           200: '#E0C0A8',
           300: '#D0B098',

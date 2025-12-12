@@ -6,7 +6,7 @@
 
 :root {
   /* Minimalist Modern Theme (The Peppy Lab - Logo Matched) */
-  --theme-bg: #F9E4D4;
+  --theme-bg: #FFFAF8;
   --theme-text: #9A4444;
   --theme-accent: #9A4444;
   --theme-secondary: #E0C0A8;
@@ -14,7 +14,7 @@
   --primary-black: #9A4444;
   --primary-white: #ffffff;
 
-  --gray-50: #F9E4D4;
+  --gray-50: #FFFAF8;
   --gray-100: #FDF1E6;
   --gray-200: #E0C0A8;
   --gray-300: #C0A080;
