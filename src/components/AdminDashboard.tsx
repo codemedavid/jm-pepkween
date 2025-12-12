@@ -390,7 +390,7 @@ const AdminDashboard: React.FC = () => {
             <div className="relative mx-auto w-16 h-16 rounded-full overflow-hidden mb-4 border-2 border-theme-accent/30">
               <img
                 src="/assets/logo.jpeg"
-                alt="The Peppy Lab"
+                alt="JM Pepkween"
                 className="w-full h-full object-cover"
               />
             </div>

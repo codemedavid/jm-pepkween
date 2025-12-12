@@ -1,25 +1,34 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Minimalist Modern Theme (The Peppy Lab - Logo Matched) */
-  --theme-bg: #FFFAF8;
-  --theme-text: #9A4444;
-  --theme-accent: #9A4444;
-  --theme-secondary: #E0C0A8;
+  /* Pink Glam Theme - Clean, classy, girly but modern */
+  --theme-bg: #FDF9FB;
+  /* Softest Pink White */
+  --theme-text: #2A2A2A;
+  /* Deep Charcoal (text/contrast) */
+  --theme-accent: #FF4FA5;
+  /* Hot Pink (main pop color) */
+  --theme-secondary: #FFBBD8;
+  /* Light Pink (secondary/background) */
 
-  --primary-black: #9A4444;
-  --primary-white: #ffffff;
+  --primary-black: #2A2A2A;
+  /* Deep Charcoal */
+  --primary-white: #FFFFFF;
+  /* White */
 
-  --gray-50: #FFFAF8;
-  --gray-100: #FDF1E6;
-  --gray-200: #E0C0A8;
-  --gray-300: #C0A080;
-  --gray-500: #7A3434;
-  --gray-900: #1A0404;
+  /* Gray scale with pink tints */
+  --gray-50: #FFF5F9;
+  --gray-100: #FFE6F0;
+  --gray-200: #FFBBD8;
+  /* Light Pink */
+  --gray-300: #FF99C8;
+  --gray-500: #CC3F7A;
+  --gray-900: #2A2A2A;
+  /* Deep Charcoal */
 }
 
 * {
@@ -29,13 +38,13 @@
 }
 
 body {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--theme-bg);
   color: var(--theme-text);
   line-height: 1.5;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 h1,

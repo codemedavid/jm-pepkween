@@ -24,17 +24,13 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
               className="flex items-center space-x-3 hover:opacity-80 transition-all group min-w-0 flex-1 max-w-[calc(100%-130px)] sm:max-w-none sm:flex-initial"
             >
               <div className="relative flex-shrink-0">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden border border-gray-200">
-                  <img
-                    src="/assets/logo.jpeg"
-                    alt="The Peppy Lab"
-                    className="w-full h-full object-cover"
-                  />
+                <div className="bg-theme-accent/10 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <img src="/assets/logo.jpeg" alt="JM Pepkween" className="w-full h-full object-cover" />
                 </div>
               </div>
               <div className="text-left min-w-0 flex-1">
                 <h1 className="text-lg sm:text-xl font-bold text-theme-text leading-tight whitespace-nowrap overflow-hidden text-ellipsis tracking-tight">
-                  The Peppy Lab
+                  JM Pepkween
                 </h1>
                 <p className="text-xs text-gray-500 font-medium flex items-center gap-1">
                   <span className="whitespace-nowrap overflow-hidden text-ellipsis">
@@ -56,7 +52,7 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                 </button>
 
                 <a
-                  href="https://t.me/anntpl"
+                  href="https://www.facebook.com/jmpepkween"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-gray-600 hover:text-theme-accent transition-colors text-sm font-medium"
@@ -134,24 +130,14 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
 
                 <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
                   <a
-                    href="https://t.me/anntpl"
+                    href="https://www.facebook.com/jmpepkween"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 text-gray-600 hover:text-theme-accent transition-colors"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <MessageCircle className="w-5 h-5" />
-                    <span className="text-sm font-medium">Contact Seller</span>
-                  </a>
-                  <a
-                    href="https://t.me/+I1VczGgB-JJlMmU9"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-gray-600 hover:text-theme-accent transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <MessageCircle className="w-5 h-5" />
-                    <span className="text-sm font-medium">Join Community</span>
+                    <span className="text-sm font-medium">Contact Seller via Facebook</span>
                   </a>
                 </div>
               </div>

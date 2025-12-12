@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ShieldCheck, Package, CreditCard, Copy, Check, MessageCircle, Upload, Image as ImageIcon, X } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Package, CreditCard, Copy, Check, MessageCircle, X } from 'lucide-react';
 import type { CartItem } from '../types';
 import { usePaymentMethods } from '../hooks/usePaymentMethods';
 import { useShippingLocations } from '../hooks/useShippingLocations';
@@ -29,16 +29,14 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
   const [state, setState] = useState('');
   const [zipCode, setZipCode] = useState('');
   const [shippingLocation, setShippingLocation] = useState<'NCR' | 'LUZON' | 'VISAYAS_MINDANAO' | ''>('');
+  const [courier, setCourier] = useState('');
 
   // Payment
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
-  const [contactMethod, setContactMethod] = useState<'telegram' | ''>('telegram');
+  const [contactMethod, setContactMethod] = useState<'messenger' | ''>('messenger');
   const [notes, setNotes] = useState('');
 
-  // Payment Proof Upload
-  const [paymentProof, setPaymentProof] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
 
   // Order message for copying
   const [orderMessage, setOrderMessage] = useState<string>('');
@@ -118,7 +116,9 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
     city.trim() !== '' &&
     state.trim() !== '' &&
     zipCode.trim() !== '' &&
-    shippingLocation !== '';
+    zipCode.trim() !== '' &&
+    shippingLocation !== '' &&
+    courier !== '';
 
   const handleProceedToPayment = () => {
     if (isDetailsValid) {
@@ -126,25 +126,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (file.size > 5 * 1024 * 1024) {
-        alert('File size too large. Please upload an image smaller than 5MB.');
-        return;
-      }
-      setPaymentProof(file);
-      setPreviewUrl(URL.createObjectURL(file));
-    }
-  };
 
-  const removeFile = () => {
-    setPaymentProof(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-    }
-  };
 
   // Generate next TPL order number
   const generateOrderNumber = async (): Promise<string> => {
@@ -180,18 +162,20 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
   };
 
   const handlePlaceOrder = async () => {
-    if (!paymentProof) {
-      alert('Please upload your proof of payment before proceeding.');
-      return;
-    }
+
 
     if (!contactMethod) {
-      alert('Please select your preferred contact method (Telegram).');
+      alert('Please select your preferred contact method (Messenger).');
       return;
     }
 
     if (!shippingLocation) {
       alert('Please select your shipping location.');
+      return;
+    }
+
+    if (!courier) {
+      alert('Please select your preferred courier.');
       return;
     }
 
@@ -258,42 +242,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
         return;
       }
 
-      let proofUrl = null;
 
-      // Upload proof of payment
-      if (paymentProof) {
-        try {
-          setUploading(true);
-          const fileExt = paymentProof.name.split('.').pop();
-          const fileName = `${orderData.id}.${fileExt}`;
-          const filePath = `${fileName}`;
-
-          const { error: uploadError } = await supabase.storage
-            .from('payment-proofs')
-            .upload(filePath, paymentProof);
-
-          if (uploadError) {
-            console.error('Error uploading proof:', uploadError);
-            alert('Order placed, but failed to upload payment proof. Please send it via Telegram.');
-          } else {
-            const { data } = supabase.storage
-              .from('payment-proofs')
-              .getPublicUrl(filePath);
-
-            proofUrl = data.publicUrl;
-
-            // Update order with proof URL
-            await supabase
-              .from('orders')
-              .update({ payment_proof_url: proofUrl })
-              .eq('id', orderData.id);
-          }
-        } catch (error) {
-          console.error('Error handling upload:', error);
-        } finally {
-          setUploading(false);
-        }
-      }
 
       console.log('✅ Order saved to database:', orderData);
 
@@ -326,7 +275,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
       });
 
       const orderDetails = `
-✨The Peppy Lab - NEW ORDER
+✨JM Pepkween - NEW ORDER
 
 📅 ORDER DATE & TIME
 ${dateTimeStamp}
@@ -343,6 +292,7 @@ Phone: ${phone}
 ${address}
 ${barangay}
 ${city}, ${state} ${zipCode}
+Courier: ${courier}
 
 🛒 ORDER DETAILS
 ${cartItems.map(item => {
@@ -371,7 +321,7 @@ ${paymentMethod ? `Account: ${paymentMethod.account_number}` : ''}
 Please attach your payment screenshot when sending this message.
 
 📱 CONTACT METHOD
-Telegram: https://t.me/anntpl
+Messenger: https://m.me/jmpepkween
 
 📋 ORDER NUMBER: #${orderData.order_number || orderData.id}
 
@@ -382,8 +332,8 @@ Please confirm this order. Thank you!
       setOrderMessage(orderDetails);
 
       // Open contact method based on selection
-      const contactUrl = contactMethod === 'telegram'
-        ? `https://t.me/anntpl`
+      const contactUrl = contactMethod === 'messenger'
+        ? `https://m.me/jmpepkween`
         : null;
 
       // Auto-copy to clipboard before opening
@@ -442,13 +392,13 @@ Please confirm this order. Thank you!
       await navigator.clipboard.writeText(orderMessage);
       setCopied(true);
       setTimeout(() => setCopied(false), 3000);
-      alert("Order details copied! You can now paste them in Telegram.");
+      alert("Order details copied! You can now paste them in Messenger.");
     } catch (e) {
       console.warn("Copy failed", e);
     }
 
-    const contactUrl = contactMethod === 'telegram'
-      ? `https://t.me/anntpl`
+    const contactUrl = contactMethod === 'messenger'
+      ? `https://m.me/jmpepkween`
       : null;
 
     if (contactUrl) {
@@ -468,7 +418,7 @@ Please confirm this order. Thank you!
               COMPLETE YOUR ORDER
             </h1>
             <p className="text-gray-600 mb-8 text-base md:text-lg leading-relaxed">
-              Copy the order message below and send it via Telegram along with your payment screenshot.
+              Copy the order message below and send it via Messenger along with your payment screenshot.
             </p>
 
             {/* Order Message Display */}
@@ -503,7 +453,7 @@ Please confirm this order. Thank you!
               {copied && (
                 <p className="text-green-600 text-sm mt-2 flex items-center gap-1">
                   <Check className="w-4 h-4" />
-                  Message copied to clipboard! Paste it in Telegram along with your payment screenshot.
+                  Message copied to clipboard! Paste it in Messenger along with your payment screenshot.
                 </p>
               )}
             </div>
@@ -512,15 +462,15 @@ Please confirm this order. Thank you!
             <div className="space-y-3 mb-8">
               <button
                 onClick={handleOpenContact}
-                className="w-full bg-[#229ED9] hover:bg-[#1f8ebf] text-white py-3 md:py-4 rounded-2xl font-bold text-base md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all flex items-center justify-center gap-2 border border-white/20"
+                className="w-full bg-[#0084FF] hover:bg-[#0078e8] text-white py-3 md:py-4 rounded-2xl font-bold text-base md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all flex items-center justify-center gap-2 border border-white/20"
               >
                 <MessageCircle className="w-5 h-5" />
-                Open Telegram
+                Open Messenger
               </button>
 
               {!contactOpened && (
                 <p className="text-sm text-gray-600">
-                  💡 If Telegram doesn't open, copy the message above and paste it manually
+                  💡 If Messenger doesn't open, copy the message above and paste it manually
                 </p>
               )}
             </div>
@@ -544,7 +494,7 @@ Please confirm this order. Thank you!
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-2xl">4️⃣</span>
-                  <span>Tracking numbers are sent via Telegram from 11 PM onwards.</span>
+                  <span>Tracking numbers are sent via Messenger from 11 PM onwards.</span>
                 </li>
               </ul>
             </div>
@@ -730,6 +680,31 @@ Please confirm this order. Thank you!
                     >
                       <p className="font-semibold text-gray-900 text-sm">{loc.id.replace('_', ' & ')}</p>
                       <p className="text-xs text-gray-500">₱{loc.fee.toLocaleString()}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Courier Selection */}
+              <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
+                <h2 className="text-lg md:text-xl font-bold text-theme-text mb-2 md:mb-3 flex items-center gap-2">
+                  <Package className="w-5 h-5 md:w-6 md:h-6 text-theme-accent" />
+                  Preferred Courier *
+                </h2>
+                <p className="text-xs text-red-500 mb-4 font-medium">
+                  Note: Payment First Policy (No COD)
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {['J&T', 'LBC', 'Lalamove'].map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => setCourier(c)}
+                      className={`p-3 rounded-lg border-2 transition-all ${courier === c
+                        ? 'border-theme-accent bg-theme-accent/5'
+                        : 'border-gray-200 hover:border-theme-accent/50'
+                        }`}
+                    >
+                      <p className="font-semibold text-gray-900 text-sm">{c}</p>
                     </button>
                   ))}
                 </div>
@@ -962,64 +937,7 @@ Please confirm this order. Thank you!
               )}
             </div>
 
-            {/* Proof of Payment Upload - NEW SECTION */}
-            <div className="bg-white rounded-xl shadow-soft p-5 md:p-6 border border-gray-200">
-              <h2 className="text-xl md:text-2xl font-bold text-theme-text mb-4 md:mb-6 flex items-center gap-2">
-                <Upload className="w-5 h-5 md:w-6 md:h-6 text-theme-accent" />
-                Upload Proof of Payment *
-              </h2>
 
-              <div className="space-y-4">
-                <p className="text-sm md:text-base text-gray-600">
-                  Please upload a screenshot of your successful payment transfer. This is required to process your order.
-                </p>
-
-                {!paymentProof ? (
-                  <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 hover:border-theme-accent hover:bg-theme-accent/5 transition-all text-center cursor-pointer relative">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <div className="flex flex-col items-center gap-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-                        <Upload className="w-6 h-6 text-gray-500" />
-                      </div>
-                      <p className="font-semibold text-gray-900 text-lg">Click to Upload</p>
-                      <p className="text-sm text-gray-500">JPG, PNG or WEBP (Max 5MB)</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative border-2 border-theme-accent/30 rounded-xl p-4 bg-theme-accent/5">
-                    <div className="flex items-center gap-4">
-                      {previewUrl ? (
-                        <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-white">
-                          <img src={previewUrl} alt="Proof preview" className="w-full h-full object-cover" />
-                        </div>
-                      ) : (
-                        <div className="w-20 h-20 rounded-lg overflow-hidden border border-gray-200 bg-white flex items-center justify-center">
-                          <ImageIcon className="w-8 h-8 text-gray-300" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 truncate text-base">{paymentProof.name}</p>
-                        <p className="text-sm text-gray-500">{(paymentProof.size / 1024 / 1024).toFixed(2)} MB</p>
-                        <p className="text-sm text-green-600 font-medium flex items-center gap-1 mt-1">
-                          <Check className="w-3 h-3" /> Ready to upload
-                        </p>
-                      </div>
-                      <button
-                        onClick={removeFile}
-                        className="p-2 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-lg transition-colors"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
 
           {/* Contact Method Selection */}
@@ -1030,21 +948,21 @@ Please confirm this order. Thank you!
             </h2>
             <div className="grid grid-cols-1 gap-3">
               <button
-                onClick={() => setContactMethod('telegram')}
-                className={`p-4 rounded-lg border-2 transition-all flex items-center justify-between ${contactMethod === 'telegram'
-                  ? 'border-[#229ED9] bg-[#229ED9]/5'
-                  : 'border-gray-200 hover:border-[#229ED9]/50'
+                onClick={() => setContactMethod('messenger')}
+                className={`p-4 rounded-lg border-2 transition-all flex items-center justify-between ${contactMethod === 'messenger'
+                  ? 'border-[#0084FF] bg-[#0084FF]/5'
+                  : 'border-gray-200 hover:border-[#0084FF]/50'
                   }`}
               >
                 <div className="flex items-center gap-3">
-                  <MessageCircle className="w-6 h-6 text-[#229ED9]" />
+                  <MessageCircle className="w-6 h-6 text-[#0084FF]" />
                   <div className="text-left">
-                    <p className="font-semibold text-gray-900">Telegram</p>
-                    <p className="text-sm text-gray-500">@anntpl</p>
+                    <p className="font-semibold text-gray-900">Messenger</p>
+                    <p className="text-sm text-gray-500">jmpepkween</p>
                   </div>
                 </div>
-                {contactMethod === 'telegram' && (
-                  <div className="w-6 h-6 bg-[#229ED9] rounded-full flex items-center justify-center">
+                {contactMethod === 'messenger' && (
+                  <div className="w-6 h-6 bg-[#0084FF] rounded-full flex items-center justify-center">
                     <span className="text-white text-xs font-bold">✓</span>
                   </div>
                 )}
@@ -1067,23 +985,16 @@ Please confirm this order. Thank you!
             />
           </div>
 
-          <button
-            onClick={handlePlaceOrder}
-            disabled={!contactMethod || !shippingLocation || !paymentProof || uploading}
-            className={`btn-primary w-full ${(!contactMethod || !shippingLocation || !paymentProof || uploading) ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            {uploading ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                Processing Order...
-              </>
-            ) : (
-              <>
-                <ShieldCheck className="w-6 h-6" />
-                Complete Order
-              </>
-            )}
-          </button>
+          <div className="pt-4 flex justify-end">
+            <button
+              onClick={handlePlaceOrder}
+              disabled={!contactMethod || !shippingLocation}
+              className={`btn-primary w-full md:w-auto md:min-w-[300px] text-lg py-4 shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-3 ${(!contactMethod || !shippingLocation) ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <ShieldCheck className="w-6 h-6" />
+              Complete Order
+            </button>
+          </div>
         </div>
 
         {/* Order Summary Sidebar */}
@@ -1133,7 +1044,6 @@ Please confirm this order. Thank you!
         </div>
       </div>
     </div>
-
   );
 };
 

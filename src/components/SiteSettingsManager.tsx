@@ -51,7 +51,7 @@ const SiteSettingsManager: React.FC = () => {
   const handleSave = async () => {
     try {
       let logoUrl = logoPreview;
-      
+
       // Upload new logo if selected
       if (logoFile) {
         const uploadedUrl = await uploadImage(logoFile, 'site-logo');
@@ -145,7 +145,7 @@ const SiteSettingsManager: React.FC = () => {
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
               <img
-                src={logoPreview || '/logo.jpg'}
+                src={logoPreview || '/assets/logo.jpeg'}
                 alt="Site Logo"
                 className="w-full h-full object-cover"
               />

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Debug</title>
+    <!-- Import the same CSS file -->
+    <link rel="stylesheet" href="/src/index.css">
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .test-box {
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            border: 1px solid #ccc;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .var-accent { background-color: var(--theme-accent); }
+        .var-secondary { background-color: var(--theme-secondary); }
+        .hardcoded-pink { background-color: #FF4FA5; }
+    </style>
+</head>
+<body>
+    <h1>Theme Debugger</h1>
+    <p>If the first box is colored, CSS variables are working.</p>
+    
+    <div class="test-box var-accent">--theme-accent</div>
+    <div class="test-box var-secondary">--theme-secondary</div>
+    <div class="test-box hardcoded-pink">Reference Pink</div>
+
+    <script>
+        const root = document.documentElement;
+        const computed = getComputedStyle(root);
+        console.log('--theme-accent:', computed.getPropertyValue('--theme-accent').trim());
+        console.log('--theme-secondary:', computed.getPropertyValue('--theme-secondary').trim());
+    </script>
+</body>
+</html>

@@ -85,19 +85,7 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
           </div>
         )}
 
-        {/* Badges */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1 pointer-events-none">
-          {product.featured && (
-            <span className="badge badge-accent text-[10px] px-1.5 py-0.5">
-              Featured
-            </span>
-          )}
-          {hasDiscount && (
-            <span className="badge bg-theme-secondary text-white text-[10px] px-1.5 py-0.5">
-              {Math.round((1 - currentPrice / product.base_price) * 100)}% OFF
-            </span>
-          )}
-        </div>
+
 
         {/* Stock Status Overlay */}
         {!hasAnyStock && (
@@ -178,8 +166,8 @@ const MenuItemCard: React.FC<MenuItemCardProps> = ({
                 className={`
                   px-1.5 py-0.5 text-[10px] rounded border transition-colors relative z-20
                   ${isCompleteSet
-                    ? 'bg-[#FFE8D6] text-theme-text border-[#FFE8D6]'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-[#FFE8D6]'
+                    ? 'bg-theme-secondary text-theme-text border-theme-secondary'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-theme-secondary'
                   }
                 `}
               >
