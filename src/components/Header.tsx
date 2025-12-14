@@ -61,12 +61,7 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                   Contact
                 </a>
 
-                <button
-                  onClick={() => window.location.href = '/coa'}
-                  className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
-                >
-                  Lab Results (COA)
-                </button>
+
               </nav>
 
               {/* Cart Button */}
@@ -118,15 +113,7 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                   Products
                 </button>
 
-                <button
-                  onClick={() => {
-                    window.location.href = '/coa';
-                    setMobileMenuOpen(false);
-                  }}
-                  className="text-left text-theme-text font-medium text-base hover:text-theme-accent transition-colors"
-                >
-                  Lab Results (COA)
-                </button>
+
 
                 <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
                   <a

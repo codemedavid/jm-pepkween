@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ShieldCheck } from 'lucide-react';
 
 type HeroProps = {
   onShopAll?: () => void;
@@ -14,27 +14,37 @@ const Hero: React.FC<HeroProps> = ({ onShopAll }) => {
 
       {/* Grid Pattern Overlay */}
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none mix-blend-overlay"></div>
-      
+
       {/* Wave Background */}
       <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
-        <img 
-          src="/assets/hero-wave.png" 
-          alt="Background Pattern" 
+        <img
+          src="/assets/hero-wave.png"
+          alt="Background Pattern"
           className="w-full h-full object-cover"
         />
       </div>
-      
+
       {/* Wave Background */}
       <div className="absolute inset-0 z-0 opacity-10 pointer-events-none">
-        <img 
-          src="/assets/hero-wave.png" 
-          alt="Background Pattern" 
+        <img
+          src="/assets/hero-wave.png"
+          alt="Background Pattern"
           className="w-full h-full object-cover"
         />
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
+
+          {/* Research Use Only Disclaimer */}
+          <div className="flex justify-center mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-blue-100 shadow-sm max-w-2xl text-left">
+              <ShieldCheck className="w-5 h-5 text-blue-600 flex-shrink-0" />
+              <p className="text-[10px] md:text-xs leading-tight text-gray-600">
+                <span className="font-bold text-blue-700">RESEARCH USE ONLY:</span> ALWAYS CONSULT A LICENSED HEALTHCARE PROFESSIONAL FOR PERSONALISED MEDICAL GUIDANCE
+              </p>
+            </div>
+          </div>
 
           {/* chic badge */}
           <div className="flex justify-center mb-8">

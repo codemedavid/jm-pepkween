@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-  ArrowLeft, Package, CheckCircle, XCircle, Clock, Truck,
-  AlertCircle, Search, RefreshCw, Eye, Trash2,
-  MoreHorizontal, Filter, ChevronDown, ChevronUp, Calendar
+  ArrowLeft, Package, CheckCircle, XCircle, Trash2,
+  Search, RefreshCw, ChevronDown, MapPin
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useMenu } from '../hooks/useMenu';
@@ -24,6 +23,7 @@ interface Order {
   customer_email: string;
   customer_phone: string;
   shipping_address: string;
+  shipping_barangay: string;
   shipping_city: string;
   shipping_state: string;
   shipping_zip_code: string;
@@ -303,9 +303,13 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                         <input type="checkbox" className="rounded border-gray-300 text-theme-accent focus:ring-theme-accent cursor-pointer" />
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-bold text-gray-900 group-hover:text-theme-accent transition-colors cursor-pointer" title="View Details">
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className="font-bold text-gray-900 hover:text-theme-accent transition-colors hover:underline text-left"
+                          title="View Details"
+                        >
                           {order.order_number || `#${order.id.slice(0, 8).toUpperCase()}`}
-                        </span>
+                        </button>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-medium text-gray-900">
@@ -429,7 +433,12 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
                 <div key={order.id} className="bg-white rounded-xl shadow-soft border border-gray-200 p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <div className="font-bold text-theme-accent">{order.order_number || `#${order.id.slice(0, 8).toUpperCase()}`}</div>
+                      <button
+                        onClick={() => setSelectedOrder(order)}
+                        className="font-bold text-theme-accent hover:underline text-left"
+                      >
+                        {order.order_number || `#${order.id.slice(0, 8).toUpperCase()}`}
+                      </button>
                       <div className="text-xs text-gray-500 mt-1">{new Date(order.created_at).toLocaleDateString()}</div>
                     </div>
                     <button onClick={() => handleDeleteOrder(order.id)} className="p-2 text-gray-400 hover:text-red-600">
@@ -485,6 +494,217 @@ const OrdersManager: React.FC<OrdersManagerProps> = ({ onBack }) => {
           )}
         </div>
       </div>
+
+      {/* Order Details Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto animate-slideUp">
+            {/* Modal Header */}
+            <div className="sticky top-0 bg-white z-10 px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-theme-text flex items-center gap-2">
+                  Order Details
+                  <span className="text-base font-medium text-gray-500">
+                    {selectedOrder.order_number || `#${selectedOrder.id.slice(0, 8).toUpperCase()}`}
+                  </span>
+                </h2>
+                <p className="text-xs text-gray-500 mt-1">
+                  Placed on {new Date(selectedOrder.created_at).toLocaleString('en-PH', { dateStyle: 'long', timeStyle: 'short' })}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <XCircle className="w-6 h-6 text-gray-400 hover:text-gray-600" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-8">
+              {/* Status Bar */}
+              <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="flex-1">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Order Status</label>
+                  <select
+                    value={selectedOrder.order_status}
+                    onChange={(e) => handleUpdateOrderStatus(selectedOrder.id, e.target.value)}
+                    className={`w-full text-sm font-semibold px-3 py-2 rounded-lg border-0 ring-1 ring-inset ring-gray-200 focus:ring-2 focus:ring-theme-accent ${selectedOrder.order_status === 'delivered' ? 'text-green-700 bg-green-50 ring-green-200' :
+                      selectedOrder.order_status === 'cancelled' ? 'text-red-700 bg-red-50 ring-red-200' :
+                        selectedOrder.order_status === 'shipped' ? 'text-blue-700 bg-blue-50 ring-blue-200' :
+                          'text-gray-700 bg-white'
+                      }`}
+                  >
+                    <option value="new">Unfulfilled</option>
+                    <option value="processing">Processing</option>
+                    <option value="shipped">Shipped</option>
+                    <option value="delivered">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Payment Status</label>
+                  <select
+                    value={selectedOrder.payment_status}
+                    onChange={(e) => handleUpdatePaymentStatus(selectedOrder.id, e.target.value)}
+                    className={`w-full text-sm font-semibold px-3 py-2 rounded-lg border-0 ring-1 ring-inset ring-gray-200 focus:ring-2 focus:ring-theme-accent ${selectedOrder.payment_status === 'paid' ? 'text-green-700 bg-green-50 ring-green-200' : 'text-yellow-700 bg-yellow-50 ring-yellow-200'}`}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="paid">Paid</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Customer Info */}
+                <div>
+                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500">
+                      <Search className="w-4 h-4" /> {/* Using Search icon as generic User icon placeholder if User icon not imported, or just reuse Search/Package */}
+                    </div>
+                    Customer Information
+                  </h3>
+                  <div className="space-y-3 text-sm text-gray-600 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                    <div className="grid grid-cols-[80px_1fr] gap-2">
+                      <span className="text-gray-400">Name</span>
+                      <span className="font-medium text-gray-900">{selectedOrder.customer_name}</span>
+                    </div>
+                    <div className="grid grid-cols-[80px_1fr] gap-2">
+                      <span className="text-gray-400">Email</span>
+                      <span className="font-medium text-gray-900">{selectedOrder.customer_email}</span>
+                    </div>
+                    <div className="grid grid-cols-[80px_1fr] gap-2">
+                      <span className="text-gray-400">Phone</span>
+                      <span className="font-medium text-gray-900">{selectedOrder.customer_phone}</span>
+                    </div>
+                    <div className="grid grid-cols-[80px_1fr] gap-2">
+                      <span className="text-gray-400">Contact</span>
+                      <span className="font-medium text-gray-900 capitalize">{selectedOrder.contact_method || 'Messenger'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Shipping Info */}
+                <div>
+                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500">
+                      <MapPin className="w-4 h-4" /> {/* MapPin not imported? Check imports. If not, use Truck */}
+                    </div>
+                    Shipping Details
+                  </h3>
+                  <div className="space-y-3 text-sm text-gray-600 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                    <div className="grid grid-cols-[80px_1fr] gap-2">
+                      <span className="text-gray-400">Address</span>
+                      <span className="font-medium text-gray-900">{selectedOrder.shipping_address}</span>
+                    </div>
+                    <div className="grid grid-cols-[80px_1fr] gap-2">
+                      <span className="text-gray-400">Location</span>
+                      <span className="font-medium text-gray-900">
+                        {selectedOrder.shipping_barangay}, {selectedOrder.shipping_city}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-[80px_1fr] gap-2">
+                      <span className="text-gray-400">Region</span>
+                      <span className="font-medium text-gray-900">
+                        {selectedOrder.shipping_state} {selectedOrder.shipping_zip_code}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-[80px_1fr] gap-2">
+                      <span className="text-gray-400">Courier</span>
+                      <span className="font-medium text-gray-900">{selectedOrder.shipping_location}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Order Items */}
+              <div>
+                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-500">
+                    <Package className="w-4 h-4" />
+                  </div>
+                  Order Items ({selectedOrder.order_items.length})
+                </h3>
+                <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold text-gray-500">Product</th>
+                        <th className="px-4 py-3 font-semibold text-gray-500 text-center">Qty</th>
+                        <th className="px-4 py-3 font-semibold text-gray-500 text-right">Price</th>
+                        <th className="px-4 py-3 font-semibold text-gray-500 text-right">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {selectedOrder.order_items.map((item, idx) => (
+                        <tr key={idx} className="hover:bg-gray-50/50">
+                          <td className="px-4 py-3">
+                            <div className="font-medium text-gray-900">{item.product_name}</div>
+                            {item.variation_name && (
+                              <div className="text-xs text-gray-500 text-gold-600">{item.variation_name}</div>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-center text-gray-600">{item.quantity}</td>
+                          <td className="px-4 py-3 text-right text-gray-600">₱{item.price.toLocaleString()}</td>
+                          <td className="px-4 py-3 text-right font-medium text-gray-900">₱{item.total.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot className="bg-gray-50 border-t border-gray-200">
+                      <tr>
+                        <td colSpan={3} className="px-4 py-3 text-right text-gray-600">Subtotal</td>
+                        <td className="px-4 py-3 text-right font-medium text-gray-900">₱{selectedOrder.total_price.toLocaleString()}</td>
+                      </tr>
+                      <tr>
+                        <td colSpan={3} className="px-4 py-3 text-right text-gray-600">Shipping Fee</td>
+                        <td className="px-4 py-3 text-right font-medium text-gray-900">₱{(selectedOrder.shipping_fee || 0).toLocaleString()}</td>
+                      </tr>
+                      <tr>
+                        <td colSpan={3} className="px-4 py-3 text-right font-bold text-gray-900 text-base">Total Amount</td>
+                        <td className="px-4 py-3 text-right font-bold text-theme-accent text-base">
+                          ₱{(selectedOrder.total_price + (selectedOrder.shipping_fee || 0)).toLocaleString()}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+
+              {/* Payment Info */}
+              <div>
+                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center text-green-500">
+                    <CheckCircle className="w-4 h-4" />
+                  </div>
+                  Payment Information
+                </h3>
+                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm text-sm">
+                  <div className="grid grid-cols-[120px_1fr] gap-2 mb-2">
+                    <span className="text-gray-400">Method</span>
+                    <span className="font-medium text-gray-900">{selectedOrder.payment_method_name || 'N/A'}</span>
+                  </div>
+                  {selectedOrder.notes && (
+                    <div className="mt-4 pt-4 border-t border-gray-100">
+                      <span className="text-gray-400 text-xs uppercase font-bold tracking-wider mb-2 block">Customer Notes</span>
+                      <p className="text-gray-700 italic bg-gray-50 p-3 rounded-lg">"{selectedOrder.notes}"</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4 flex justify-end gap-3 rounded-b-2xl">
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="px-6 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors"
+              >
+                Close Details
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
