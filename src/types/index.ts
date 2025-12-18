@@ -113,7 +113,14 @@ export interface Voucher {
 
 export interface COA {
   id: string;
-  title: string;
+  title: string; // Used as product_name
+  product_name?: string;
   image_url: string;
+  purity?: string;
+  quantity?: string;
+  task_number?: string;
+  verification_key?: string;
+  test_date?: string;
+  is_verified?: boolean;
   created_at: string;
 }

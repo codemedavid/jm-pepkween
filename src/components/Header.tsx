@@ -52,6 +52,27 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                 </button>
 
                 <a
+                  href="/coa"
+                  className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
+                >
+                  Lab Reports
+                </a>
+
+                <a
+                  href="/faq"
+                  className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
+                >
+                  FAQ
+                </a>
+
+                <a
+                  href="/testimonials"
+                  className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
+                >
+                  Testimonials
+                </a>
+
+                <a
                   href="https://www.facebook.com/jmpepkween"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -113,6 +134,30 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                   Products
                 </button>
 
+                <a
+                  href="/coa"
+                  className="text-left text-theme-text font-medium text-base hover:text-theme-accent transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  📋 Lab Reports
+                </a>
+
+                <a
+                  href="/faq"
+                  className="text-left text-theme-text font-medium text-base hover:text-theme-accent transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  FAQ
+                </a>
+
+                <a
+                  href="/testimonials"
+                  className="text-left text-theme-text font-medium text-base hover:text-theme-accent transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Testimonials
+                </a>
+
 
 
                 <div className="pt-4 border-t border-gray-100 flex flex-col gap-3">
@@ -129,8 +174,8 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                 </div>
               </div>
             </nav>
-          </div>
-        </div>
+          </div >
+        </div >
       )}
     </>
   );

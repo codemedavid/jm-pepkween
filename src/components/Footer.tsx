@@ -1,5 +1,6 @@
 import React from 'react';
-import { MessageCircle, Heart } from 'lucide-react';
+import { MessageCircle, Heart, HelpCircle } from 'lucide-react';
+
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -31,6 +32,20 @@ const Footer: React.FC = () => {
 
           {/* Quick Links */}
           <div className="flex flex-wrap items-center gap-4 justify-center md:justify-end">
+            <a
+              href="/faq"
+              className="flex items-center gap-2 text-gray-600 hover:text-theme-accent transition-colors text-sm font-medium"
+            >
+              <HelpCircle className="w-4 h-4" />
+              <span>FAQ</span>
+            </a>
+            <a
+              href="/testimonials"
+              className="flex items-center gap-2 text-gray-600 hover:text-theme-accent transition-colors text-sm font-medium"
+            >
+              <Heart className="w-4 h-4" />
+              <span>Testimonials</span>
+            </a>
             <a
               href="https://www.facebook.com/jmpepkween"
               target="_blank"

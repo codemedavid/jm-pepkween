@@ -10,6 +10,10 @@ import Checkout from './components/Checkout';
 import FloatingCartButton from './components/FloatingCartButton';
 import Footer from './components/Footer';
 import AdminDashboard from './components/AdminDashboard';
+import Testimonials from './components/Testimonials';
+import FAQ from './components/FAQ';
+import COA from './components/COA';
+import PageLayout from './components/PageLayout';
 
 import { useMenu } from './hooks/useMenu';
 
@@ -98,9 +102,12 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<MainApp />} />
-
-
         <Route path="/admin" element={<AdminDashboard />} />
+        <Route element={<PageLayout />}>
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/testimonials" element={<Testimonials />} />
+          <Route path="/coa" element={<COA />} />
+        </Route>
       </Routes>
     </Router>
   );

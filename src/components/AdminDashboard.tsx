@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Save, X, ArrowLeft, TrendingUp, Package, Users, FolderOpen, CreditCard, Sparkles, Layers, RefreshCw, Warehouse, ShoppingCart, MapPin, Ticket } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, ArrowLeft, TrendingUp, Package, Users, FolderOpen, CreditCard, Sparkles, Layers, RefreshCw, Warehouse, ShoppingCart, MapPin, Ticket, HelpCircle } from 'lucide-react';
 import type { Product } from '../types';
 import { useMenu } from '../hooks/useMenu';
 import { useCategories } from '../hooks/useCategories';
@@ -11,6 +11,9 @@ import PeptideInventoryManager from './PeptideInventoryManager';
 import OrdersManager from './OrdersManager';
 import ShippingManager from './ShippingManager';
 import VoucherManager from './VoucherManager';
+import COAManager from './COAManager';
+import TestimonialsManager from './TestimonialsManager';
+import FAQManager from './FAQManager';
 
 
 const AdminDashboard: React.FC = () => {
@@ -21,7 +24,7 @@ const AdminDashboard: React.FC = () => {
   const [loginError, setLoginError] = useState('');
   const { products, loading, addProduct, updateProduct, deleteProduct, refreshProducts } = useMenu();
   const { categories } = useCategories();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'products' | 'add' | 'edit' | 'categories' | 'payments' | 'inventory' | 'orders' | 'shipping' | 'vouchers'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'products' | 'add' | 'edit' | 'categories' | 'payments' | 'inventory' | 'orders' | 'shipping' | 'vouchers' | 'coa' | 'faq'>('dashboard');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [managingVariationsProductId, setManagingVariationsProductId] = useState<string | null>(null);
@@ -156,6 +159,33 @@ const AdminDashboard: React.FC = () => {
     return (
       <div className="min-h-screen bg-theme-bg p-4 md:p-8">
         <VoucherManager onBack={() => setCurrentView('dashboard')} />
+      </div>
+    );
+  }
+
+  // COA View
+  if (currentView === 'coa') {
+    return (
+      <div className="min-h-screen bg-theme-bg p-4 md:p-8">
+        <COAManager onBack={() => setCurrentView('dashboard')} />
+      </div>
+    );
+  }
+
+  // FAQ View
+  if (currentView === 'faq') {
+    return (
+      <div className="min-h-screen bg-theme-bg p-4 md:p-8">
+        <FAQManager onBack={() => setCurrentView('dashboard')} />
+      </div>
+    );
+  }
+
+  // Testimonials View
+  if (currentView === 'testimonials') {
+    return (
+      <div className="min-h-screen bg-theme-bg p-4 md:p-8">
+        <TestimonialsManager onBack={() => setCurrentView('dashboard')} />
       </div>
     );
   }
@@ -1350,6 +1380,21 @@ const AdminDashboard: React.FC = () => {
                   </div>
                   <span className="text-sm font-medium text-gray-700">Shipping Locations</span>
                 </button>
+                <h3 className="text-sm font-medium text-gray-600 mt-2">Site Content</h3>
+                <div className="space-y-2 mt-2">
+                  <button
+                    onClick={() => setCurrentView('testimonials')}
+                    className="w-full bg-white p-3 rounded-lg shadow-sm border border-gray-100 hover:border-theme-secondary hover:shadow-md transition-all flex items-center justify-between group"
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center">
+                        <MessageSquare className="w-4 h-4" />
+                      </span>
+                      <span className="font-medium text-gray-700 group-hover:text-theme-accent">Testimonials</span>
+                    </span>
+                    <ArrowLeft className="w-4 h-4 text-gray-300 transform rotate-180 group-hover:text-theme-accent group-hover:translate-x-1 transition-all" />
+                  </button>
+                </div>
                 <button
                   onClick={() => setCurrentView('vouchers')}
                   className="w-full flex items-center gap-3 p-2 text-left hover:bg-gray-50 rounded-lg transition-all"
@@ -1358,6 +1403,15 @@ const AdminDashboard: React.FC = () => {
                     <Ticket className="h-4 w-4 text-pink-600" />
                   </div>
                   <span className="text-sm font-medium text-gray-700">Manage Vouchers</span>
+                </button>
+                <button
+                  onClick={() => setCurrentView('faq')}
+                  className="w-full flex items-center gap-3 p-2 text-left hover:bg-gray-50 rounded-lg transition-all"
+                >
+                  <div className="p-1.5 bg-cyan-50 rounded-lg">
+                    <HelpCircle className="h-4 w-4 text-cyan-600" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Manage FAQs</span>
                 </button>
 
               </div>

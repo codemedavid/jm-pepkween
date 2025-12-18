@@ -17,13 +17,19 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeCategory, onCategoryClick }
             key={category.id}
             onClick={() => onCategoryClick(category.id)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ${activeCategory === category.id
-                ? 'bg-theme-accent text-white border-theme-accent'
-                : 'bg-transparent text-gray-600 border-gray-200 hover:border-theme-accent'
+              ? 'bg-theme-accent text-white border-theme-accent'
+              : 'bg-transparent text-gray-600 border-gray-200 hover:border-theme-accent'
               }`}
           >
             {category.name}
           </button>
         ))}
+        <a
+          href="/coa"
+          className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border bg-transparent text-gray-600 border-gray-200 hover:border-theme-accent whitespace-nowrap"
+        >
+          📋 Lab Reports
+        </a>
       </div>
     </div>
   );
