@@ -14,7 +14,7 @@ interface CheckoutProps {
 
 const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) => {
   const { paymentMethods } = usePaymentMethods();
-  const { locations: shippingLocations, getShippingFee } = useShippingLocations();
+  const { locations: shippingLocations } = useShippingLocations();
   const [step, setStep] = useState<'details' | 'payment' | 'confirmation'>('details');
 
   // Customer Details
@@ -62,7 +62,8 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
 
   // Calculate shipping fee based on location (uses dynamic fees from database)
   // Calculate shipping fee based on location (uses dynamic fees from database)
-  const shippingFee = shippingLocation ? getShippingFee(shippingLocation) : 0;
+  // Shipping fee is now "To be discussed", so we set it to 0 for the total calculation
+  const shippingFee = 0;
   const subtotalAfterVoucher = Math.max(0, totalPrice - (appliedVoucher?.discount_amount || 0));
   const finalTotal = subtotalAfterVoucher + shippingFee;
 
@@ -310,7 +311,7 @@ ${cartItems.map(item => {
 💰 PRICING
 Product Total: ₱${totalPrice.toLocaleString('en-PH', { minimumFractionDigits: 0 })}
 ${appliedVoucher ? `Discount (${appliedVoucher.code}): -₱${appliedVoucher.discount_amount.toLocaleString('en-PH', { minimumFractionDigits: 0 })}` : ''}
-Shipping Fee: ₱${shippingFee.toLocaleString('en-PH', { minimumFractionDigits: 0 })} (${shippingLocation.replace('_', ' & ')})
+Shipping Fee: To be discussed (${shippingLocation.replace('_', ' & ')})
 Grand Total: ₱${finalTotal.toLocaleString('en-PH', { minimumFractionDigits: 0 })}
 
 💳 PAYMENT METHOD
@@ -664,7 +665,7 @@ Please confirm this order. Thank you!
                   Choose Shipping Location *
                 </h2>
                 <p className="text-xs md:text-sm text-gray-600 mb-4 md:mb-6">
-                  Shipping rates apply to small pouches (4.1 × 9.5 inches) with a capacity of up to 3 pens. For bulk orders exceeding this size, our team will contact you for the adjusted shipping fees.
+                  Please select your location. Note: Shipping fee is to be discussed based on your order size and location.
                 </p>
                 <div className="grid grid-cols-3 gap-2">
                   {shippingLocations.map((loc) => (
@@ -677,7 +678,7 @@ Please confirm this order. Thank you!
                         }`}
                     >
                       <p className="font-semibold text-gray-900 text-sm">{loc.id.replace('_', ' & ')}</p>
-                      <p className="text-xs text-gray-500">₱{loc.fee.toLocaleString()}</p>
+                      {/* <p className="text-xs text-gray-500">₱{loc.fee.toLocaleString()}</p> */}
                     </button>
                   ))}
                 </div>
@@ -797,7 +798,7 @@ Please confirm this order. Thank you!
                   <div className="flex justify-between text-gray-600 text-xs">
                     <span>Shipping</span>
                     <span className="font-medium text-gold-600">
-                      {shippingLocation ? `₱${shippingFee.toLocaleString('en-PH', { minimumFractionDigits: 0 })}` : 'Select location'}
+                      {shippingLocation ? 'To be discussed' : 'Select location'}
                     </span>
                   </div>
                   <div className="border-t-2 border-gray-200 pt-3">
@@ -849,7 +850,7 @@ Please confirm this order. Thank you!
                 Choose Shipping Location *
               </h2>
               <p className="text-xs md:text-sm text-gray-600 mb-4 md:mb-6">
-                Shipping rates apply to small pouches (4.1 × 9.5 inches) with a capacity of up to 3 pens. For bulk orders exceeding this size, our team will contact you for the adjusted shipping fees.
+                Please select your location. Note: Shipping fee is to be discussed based on your order size and location.
               </p>
               <div className="grid grid-cols-1 gap-3">
                 {shippingLocations.map((loc) => (
@@ -863,7 +864,7 @@ Please confirm this order. Thank you!
                   >
                     <div className="text-left">
                       <p className="font-semibold text-gray-900">{loc.id.replace('_', ' & ')}</p>
-                      <p className="text-sm text-gray-500">₱{loc.fee.toLocaleString()}</p>
+                      {/* <p className="text-sm text-gray-500">₱{loc.fee.toLocaleString()}</p> */}
                     </div>
                     {shippingLocation === loc.id && (
                       <div className="w-6 h-6 bg-theme-accent rounded-full flex items-center justify-center">
@@ -1023,7 +1024,7 @@ Please confirm this order. Thank you!
               <div className="flex justify-between text-gray-600 text-xs">
                 <span>Shipping</span>
                 <span className="font-medium text-gold-600">
-                  {shippingLocation ? `₱${shippingFee.toLocaleString('en-PH', { minimumFractionDigits: 0 })} (${shippingLocation.replace('_', ' & ')})` : 'Select location'}
+                  {shippingLocation ? `To be discussed (${shippingLocation.replace('_', ' & ')})` : 'Select location'}
                 </span>
               </div>
               <div className="border-t-2 border-gray-200 pt-3">
