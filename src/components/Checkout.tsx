@@ -333,7 +333,7 @@ Please confirm this order. Thank you!
 
       // Open contact method based on selection
       const contactUrl = contactMethod === 'messenger'
-        ? `https://m.me/jmpepkween`
+        ? `https://m.me/jmpepkween?text=${encodeURIComponent(orderDetails)}`
         : null;
 
       // Auto-copy to clipboard before opening, handling potential errors silently
@@ -394,8 +394,9 @@ Please confirm this order. Thank you!
       console.warn("Copy failed", e);
     }
 
+    const encodedMessage = encodeURIComponent(orderMessage);
     const contactUrl = contactMethod === 'messenger'
-      ? `https://m.me/jmpepkween`
+      ? `https://m.me/jmpepkween?text=${encodedMessage}`
       : null;
 
     if (contactUrl) {
