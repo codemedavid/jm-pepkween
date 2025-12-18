@@ -333,23 +333,20 @@ Please confirm this order. Thank you!
 
       // Open contact method based on selection
       const contactUrl = contactMethod === 'messenger'
-        ? `https://m.me/jmpepkween`
+        ? `https://www.facebook.com/jmpepkween`
         : null;
 
-      // Auto-copy to clipboard before opening
+      // Auto-copy to clipboard before opening, handling potential errors silently
       try {
         await navigator.clipboard.writeText(orderDetails);
         setCopied(true);
         setTimeout(() => setCopied(false), 3000);
       } catch (err) {
-        console.warn('Auto-copy failed', err);
+        // Ignore copy errors, user can manually copy
       }
 
       if (contactUrl) {
-        // Adding a small delay to ensure clipboard write finishes
-        setTimeout(() => {
-          window.open(contactUrl, '_blank');
-        }, 100);
+        window.open(contactUrl, '_blank');
         setContactOpened(true);
       }
 
@@ -398,7 +395,7 @@ Please confirm this order. Thank you!
     }
 
     const contactUrl = contactMethod === 'messenger'
-      ? `https://m.me/jmpepkween`
+      ? `https://www.facebook.com/jmpepkween`
       : null;
 
     if (contactUrl) {
