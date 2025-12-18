@@ -1,77 +1,34 @@
 import React, { useState } from 'react';
-import { Star, MessageSquare, Send, User, Quote } from 'lucide-react';
+import { Star, Quote } from 'lucide-react';
 import { useTestimonials } from '../hooks/useTestimonials';
 
 const CATEGORIES = ['All', 'Product Quality', 'Service', 'Results', 'Delivery'];
 
 const Testimonials: React.FC = () => {
     const [activeCategory, setActiveCategory] = useState('All');
-    const { testimonials, loading: loadingTestimonials, addTestimonial } = useTestimonials(true); // Only approved
-
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        category: 'Product Quality',
-        content: '',
-        rating: 5
-    });
-    const [submitted, setSubmitted] = useState(false);
-    const [submitting, setSubmitting] = useState(false);
+    const { testimonials, loading: loadingTestimonials } = useTestimonials(true); // Only approved
 
     const filteredTestimonials = activeCategory === 'All'
         ? testimonials
         : testimonials.filter(t => t.category === activeCategory);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setSubmitting(true);
-
-        // Call addTestimonial from hook
-        const result = await addTestimonial({
-            name: formData.name,
-            content: formData.content,
-            rating: Number(formData.rating),
-            category: formData.category,
-            role: 'Verified Customer' // Default role
-        });
-
-        setSubmitting(false);
-
-        if (result.success) {
-            setSubmitted(true);
-            setFormData({
-                name: '',
-                email: '',
-                category: 'Product Quality',
-                content: '',
-                rating: 5
-            });
-            // Reset success message after 5 seconds
-            setTimeout(() => {
-                setSubmitted(false);
-            }, 5000);
-        } else {
-            alert("Failed to submit review. Please try again.");
-        }
-    };
-
     return (
         <div className="bg-theme-bg min-h-screen">
+            {/* Hero Section */}
             {/* Hero Section */}
             <div className="bg-gradient-to-r from-theme-secondary to-theme-accent text-white py-16 sm:py-24 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                 <div className="container mx-auto px-4 relative z-10 text-center">
-                    <h1 className="text-4xl sm:text-5xl font-bold mb-4 animate-fadeIn">Client Love</h1>
-                    <p className="text-lg sm:text-xl max-w-2xl mx-auto opacity-90 animate-slideIn">
-                        See what our community has to say about their journey with The Peppy Lab.
+                    <div className="flex justify-center mb-4">
+                        <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm animate-bounce-slow">
+                            <Star className="w-8 h-8 text-yellow-300 fill-yellow-300" />
+                        </div>
+                    </div>
+                    <h1 className="text-4xl sm:text-6xl font-extrabold mb-6 animate-fadeIn tracking-tight">
+                        Real Results, Real Stories
+                    </h1>
+                    <p className="text-lg sm:text-xl max-w-2xl mx-auto opacity-90 animate-slideIn font-light leading-relaxed">
+                        Join thousands of satisfied customers who have transformed their routine with The Peppy Lab.
                     </p>
                 </div>
             </div>
