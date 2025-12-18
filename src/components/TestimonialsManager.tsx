@@ -15,7 +15,39 @@ const TestimonialsManager: React.FC<TestimonialsManagerProps> = ({ onBack }) => 
         rating: 5,
         category: 'Product Quality'
     });
-    const { addTestimonial, testimonials, loading, updateTestimonialStatus, deleteTestimonial, refreshTestimonials } = useTestimonials(false);
+    const { addTestimonial, testimonials, loading, error, updateTestimonialStatus, deleteTestimonial, refreshTestimonials } = useTestimonials(false);
+    const [filter, setFilter] = useState<'all' | 'pending' | 'approved'>('all');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isProcessing, setIsProcessing] = useState<number | null>(null);
+
+    // Show error state if data fetching fails
+    if (error) {
+        return (
+            <div className="min-h-screen bg-theme-bg p-8 flex items-center justify-center">
+                <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full text-center">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <X className="w-8 h-8 text-red-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Error Loading Testimonials</h3>
+                    <p className="text-gray-600 mb-6">{error}</p>
+                    <div className="bg-gray-50 p-4 rounded text-left text-sm text-gray-500 mb-6">
+                        <p className="font-medium mb-1">Troubleshooting:</p>
+                        <ul className="list-disc pl-5 space-y-1">
+                            <li>Check database connection</li>
+                            <li>Ensure 'testimonials' table exists</li>
+                            <li>Run migration: <code>supabase/migrations/20250118_add_sample_testimonial.sql</code></li>
+                        </ul>
+                    </div>
+                    <button
+                        onClick={onBack}
+                        className="btn-primary w-full"
+                    >
+                        Return to Dashboard
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     // ... existing filter/search logic ...
     const filteredTestimonials = testimonials.filter(t => {
