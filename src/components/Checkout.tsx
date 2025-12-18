@@ -333,7 +333,7 @@ Please confirm this order. Thank you!
 
       // Open contact method based on selection
       const contactUrl = contactMethod === 'messenger'
-        ? `https://www.facebook.com/jmpepkween`
+        ? `https://m.me/jmpepkween`
         : null;
 
       // Auto-copy to clipboard before opening, handling potential errors silently
@@ -395,7 +395,7 @@ Please confirm this order. Thank you!
     }
 
     const contactUrl = contactMethod === 'messenger'
-      ? `https://www.facebook.com/jmpepkween`
+      ? `https://m.me/jmpepkween`
       : null;
 
     if (contactUrl) {
