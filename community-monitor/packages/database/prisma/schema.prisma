@@ -1,0 +1,83 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  communities Community[]
+}
+
+model Community {
+  id          String   @id @default(cuid())
+  name        String
+  platform    Platform
+  platformId  String   @unique // Discord Guild ID or WhatsApp Group ID
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  
+  rules       Rule[]
+  violations  Violation[]
+}
+
+model Rule {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        RuleType // REGEX, KEYWORD, AI
+  pattern     String?  // Regex pattern or Keyword
+  aiPrompt    String?  // Prompt for AI context
+  severity    Severity @default(WARNING)
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  communityId String
+  community   Community @relation(fields: [communityId], references: [id])
+  violations  Violation[]
+}
+
+model Violation {
+  id          String   @id @default(cuid())
+  messageContent String
+  senderId    String   // ID of the user on the platform
+  senderName  String?
+  confidence  Float?   // AI Confidence score
+  actionTaken String?  // "WARNED", "DELETED", "NONE"
+  createdAt   DateTime @default(now())
+
+  ruleId      String
+  rule        Rule     @relation(fields: [ruleId], references: [id])
+  communityId String
+  community   Community @relation(fields: [communityId], references: [id])
+}
+
+enum Platform {
+  DISCORD
+  WHATSAPP
+}
+
+enum RuleType {
+  REGEX
+  KEYWORD
+  AI
+}
+
+enum Severity {
+  INFO
+  WARNING
+  CRITICAL
+}

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTestimonials, Testimonial } from '../hooks/useTestimonials';
-import { Check, X, Trash2, Search, Filter, MessageSquare, Star, ArrowLeft, Plus } from 'lucide-react';
+import { useImageUpload } from '../hooks/useImageUpload';
+import { Check, X, Trash2, Search, MessageSquare, ArrowLeft, Plus, Upload, Image, Pencil } from 'lucide-react';
 
 interface TestimonialsManagerProps {
     onBack: () => void;
@@ -8,17 +9,18 @@ interface TestimonialsManagerProps {
 
 const TestimonialsManager: React.FC<TestimonialsManagerProps> = ({ onBack }) => {
     const [showAddForm, setShowAddForm] = useState(false);
+    const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
     const [formData, setFormData] = useState({
-        name: '',
-        role: 'Verified Customer',
-        content: '',
-        rating: 5,
-        category: 'Product Quality'
+        title: '',
+        description: '',
+        image_url: ''
     });
-    const { addTestimonial, testimonials, loading, error, updateTestimonialStatus, deleteTestimonial, refreshTestimonials } = useTestimonials(false);
+    const { addTestimonial, updateTestimonial, testimonials, loading, error, updateTestimonialStatus, deleteTestimonial, refreshTestimonials } = useTestimonials(false);
+    const { uploadImage, uploading, uploadProgress } = useImageUpload('testimonials');
     const [filter, setFilter] = useState<'all' | 'pending' | 'approved'>('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [isProcessing, setIsProcessing] = useState<number | null>(null);
+    const [dragActive, setDragActive] = useState(false);
 
     // Show error state if data fetching fails
     if (error) {
@@ -35,7 +37,7 @@ const TestimonialsManager: React.FC<TestimonialsManagerProps> = ({ onBack }) => 
                         <ul className="list-disc pl-5 space-y-1">
                             <li>Check database connection</li>
                             <li>Ensure 'testimonials' table exists</li>
-                            <li>Run migration: <code>supabase/migrations/20250118_add_sample_testimonial.sql</code></li>
+                            <li>Run migration: <code>20250119_update_testimonials_for_screenshots.sql</code></li>
                         </ul>
                     </div>
                     <button
@@ -49,11 +51,10 @@ const TestimonialsManager: React.FC<TestimonialsManagerProps> = ({ onBack }) => 
         );
     }
 
-    // ... existing filter/search logic ...
     const filteredTestimonials = testimonials.filter(t => {
         const matchesSearch =
-            t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            t.content.toLowerCase().includes(searchTerm.toLowerCase());
+            (t.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+            (t.description?.toLowerCase() || '').includes(searchTerm.toLowerCase());
 
         if (filter === 'all') return matchesSearch;
         if (filter === 'pending') return matchesSearch && !t.approved;
@@ -61,25 +62,58 @@ const TestimonialsManager: React.FC<TestimonialsManagerProps> = ({ onBack }) => 
         return matchesSearch;
     });
 
+    const handleImageUpload = async (file: File) => {
+        try {
+            const url = await uploadImage(file);
+            setFormData(prev => ({ ...prev, image_url: url }));
+        } catch (err) {
+            console.error('Upload error:', err);
+            alert('Failed to upload image. Please try again.');
+        }
+    };
+
+    const handleDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === 'dragenter' || e.type === 'dragover') {
+            setDragActive(true);
+        } else if (e.type === 'dragleave') {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleImageUpload(e.dataTransfer.files[0]);
+        }
+    };
+
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsProcessing(-1); // Use -1 for create loading state
+
+        if (!formData.image_url) {
+            alert('Please upload a screenshot image');
+            return;
+        }
+
+        setIsProcessing(-1);
 
         try {
             const result = await addTestimonial({
                 ...formData,
-                approved: true // Admins post automatically approved reviews
-            });
+                approved: true
+            } as any);
 
             if (result.success) {
                 await refreshTestimonials();
                 setShowAddForm(false);
                 setFormData({
-                    name: '',
-                    role: 'Verified Customer',
-                    content: '',
-                    rating: 5,
-                    category: 'Product Quality'
+                    title: '',
+                    description: '',
+                    image_url: ''
                 });
             } else {
                 alert('Failed to create testimonial');
@@ -92,100 +126,196 @@ const TestimonialsManager: React.FC<TestimonialsManagerProps> = ({ onBack }) => 
         }
     };
 
-    if (showAddForm) {
+    const handleEdit = (testimonial: Testimonial) => {
+        setEditingTestimonial(testimonial);
+        setFormData({
+            title: testimonial.title || testimonial.name || '',
+            description: testimonial.description || testimonial.content || '',
+            image_url: testimonial.image_url || ''
+        });
+    };
+
+    const handleUpdate = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!editingTestimonial) return;
+
+        setIsProcessing(editingTestimonial.id);
+
+        try {
+            const result = await updateTestimonial(editingTestimonial.id, {
+                title: formData.title,
+                description: formData.description,
+                image_url: formData.image_url
+            });
+
+            if (result.success) {
+                setEditingTestimonial(null);
+                setFormData({
+                    title: '',
+                    description: '',
+                    image_url: ''
+                });
+            } else {
+                alert('Failed to update testimonial');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('An error occurred');
+        } finally {
+            setIsProcessing(null);
+        }
+    };
+
+    const handleApprove = async (id: number) => {
+        setIsProcessing(id);
+        await updateTestimonialStatus(id, true);
+        setIsProcessing(null);
+    };
+
+    const handleUnapprove = async (id: number) => {
+        setIsProcessing(id);
+        await updateTestimonialStatus(id, false);
+        setIsProcessing(null);
+    };
+
+    const handleDelete = async (id: number) => {
+        if (!confirm('Are you sure you want to delete this testimonial?')) return;
+        setIsProcessing(id);
+        await deleteTestimonial(id);
+        setIsProcessing(null);
+    };
+
+    const handleCancelForm = () => {
+        setShowAddForm(false);
+        setEditingTestimonial(null);
+        setFormData({
+            title: '',
+            description: '',
+            image_url: ''
+        });
+    };
+
+    // Show Add or Edit Form
+    if (showAddForm || editingTestimonial) {
+        const isEditing = !!editingTestimonial;
+
         return (
             <div className="min-h-screen bg-theme-bg p-6">
                 <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
                     <div className="flex items-center justify-between mb-6">
                         <button
-                            onClick={() => setShowAddForm(false)}
+                            onClick={handleCancelForm}
                             className="text-gray-500 hover:text-gray-700 flex items-center gap-1"
                         >
                             <ArrowLeft className="w-4 h-4" /> Back
                         </button>
-                        <h2 className="text-xl font-bold text-gray-900">Add Customer Review</h2>
+                        <h2 className="text-xl font-bold text-gray-900">
+                            {isEditing ? 'Edit Testimonial' : 'Add Customer Screenshot'}
+                        </h2>
                     </div>
 
-                    <form onSubmit={handleCreate} className="space-y-4">
+                    <form onSubmit={isEditing ? handleUpdate : handleCreate} className="space-y-6">
+                        {/* Image Upload */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
-                            <input
-                                type="text"
-                                required
-                                className="input-field"
-                                value={formData.name}
-                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                placeholder="e.g. John Doe"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Role/Title (Optional)</label>
-                            <input
-                                type="text"
-                                className="input-field"
-                                value={formData.role}
-                                onChange={e => setFormData({ ...formData, role: e.target.value })}
-                                placeholder="e.g. Verified Customer"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                            <select
-                                className="input-field"
-                                value={formData.category}
-                                onChange={e => setFormData({ ...formData, category: e.target.value })}
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Screenshot Image *</label>
+                            <div
+                                className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-all ${dragActive ? 'border-theme-accent bg-theme-accent/5' : 'border-gray-300 hover:border-gray-400'
+                                    }`}
+                                onDragEnter={handleDrag}
+                                onDragLeave={handleDrag}
+                                onDragOver={handleDrag}
+                                onDrop={handleDrop}
                             >
-                                <option value="Product Quality">Product Quality</option>
-                                <option value="Service">Service</option>
-                                <option value="Results">Results</option>
-                                <option value="Delivery">Delivery</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-                            <div className="flex gap-2">
-                                {[1, 2, 3, 4, 5].map(star => (
-                                    <button
-                                        key={star}
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, rating: star })}
-                                        className="focus:outline-none"
-                                    >
-                                        <Star className={`w-8 h-8 ${star <= formData.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`} />
-                                    </button>
-                                ))}
+                                {formData.image_url ? (
+                                    <div className="relative">
+                                        <img
+                                            src={formData.image_url}
+                                            alt="Preview"
+                                            className="max-h-64 mx-auto rounded-lg shadow-md"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, image_url: '' }))}
+                                            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ) : uploading ? (
+                                    <div className="py-8">
+                                        <div className="w-16 h-16 mx-auto mb-4 relative">
+                                            <div className="absolute inset-0 border-4 border-gray-200 rounded-full"></div>
+                                            <div
+                                                className="absolute inset-0 border-4 border-theme-accent rounded-full border-t-transparent animate-spin"
+                                                style={{ animationDuration: '1s' }}
+                                            ></div>
+                                        </div>
+                                        <p className="text-gray-600">Uploading... {uploadProgress}%</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                                        <p className="text-gray-600 mb-2">Drag and drop your screenshot here, or</p>
+                                        <label className="cursor-pointer">
+                                            <span className="btn-primary inline-block">Browse Files</span>
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                className="hidden"
+                                                onChange={(e) => {
+                                                    if (e.target.files?.[0]) {
+                                                        handleImageUpload(e.target.files[0]);
+                                                    }
+                                                }}
+                                            />
+                                        </label>
+                                        <p className="text-xs text-gray-400 mt-3">Supports: JPG, PNG, WebP, HEIC (Max 10MB)</p>
+                                    </>
+                                )}
                             </div>
                         </div>
 
+                        {/* Title */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Review Content</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                            <input
+                                type="text"
+                                required
+                                className="input-field"
+                                value={formData.title}
+                                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                placeholder="e.g. Dosage Guidance & Effectiveness"
+                            />
+                        </div>
+
+                        {/* Description */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
                             <textarea
                                 required
-                                rows={4}
+                                rows={3}
                                 className="input-field"
-                                value={formData.content}
-                                onChange={e => setFormData({ ...formData, content: e.target.value })}
-                                placeholder="Enter the customer review..."
+                                value={formData.description}
+                                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                placeholder="Brief summary of what the screenshot shows..."
                             />
                         </div>
 
                         <div className="pt-4 flex justify-end gap-3">
                             <button
                                 type="button"
-                                onClick={() => setShowAddForm(false)}
+                                onClick={handleCancelForm}
                                 className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                disabled={isProcessing === -1}
-                                className="btn-primary"
+                                disabled={isProcessing !== null || (!isEditing && !formData.image_url)}
+                                className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {isProcessing === -1 ? 'Saving...' : 'Post Review'}
+                                {isProcessing !== null ? 'Saving...' : (isEditing ? 'Save Changes' : 'Add Screenshot')}
                             </button>
                         </div>
                     </form>
@@ -193,8 +323,6 @@ const TestimonialsManager: React.FC<TestimonialsManagerProps> = ({ onBack }) => 
             </div>
         );
     }
-
-    // ... existing handlers ...
 
     return (
         <div className="min-h-screen bg-theme-bg">
@@ -219,15 +347,12 @@ const TestimonialsManager: React.FC<TestimonialsManagerProps> = ({ onBack }) => 
                                 onClick={() => setShowAddForm(true)}
                                 className="btn-primary flex items-center gap-2 px-3 py-1.5 text-sm"
                             >
-                                <Plus className="w-4 h-4" /> Add Review
+                                <Plus className="w-4 h-4" /> Add Screenshot
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
-
-            {/* ... rest of existing render code ... */}
-
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Filters */}
@@ -237,7 +362,7 @@ const TestimonialsManager: React.FC<TestimonialsManagerProps> = ({ onBack }) => 
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                             <input
                                 type="text"
-                                placeholder="Search review..."
+                                placeholder="Search testimonials..."
                                 className="pl-9 pr-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-theme-accent w-full md:w-64"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
@@ -274,54 +399,72 @@ const TestimonialsManager: React.FC<TestimonialsManagerProps> = ({ onBack }) => 
                     </div>
                 ) : filteredTestimonials.length === 0 ? (
                     <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                        <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                        <Image className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                         <h3 className="text-lg font-medium text-gray-900">No testimonials found</h3>
-                        <p className="text-gray-500">Try adjusting your filters or search terms.</p>
+                        <p className="text-gray-500">Upload your first customer screenshot to get started.</p>
                     </div>
                 ) : (
-                    <div className="grid gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredTestimonials.map((testimonial) => (
                             <div
                                 key={testimonial.id}
-                                className={`bg-white rounded-lg p-5 shadow-sm border-l-4 transition-all ${testimonial.approved ? 'border-l-green-500' : 'border-l-yellow-400'}`}
+                                className={`bg-white rounded-xl overflow-hidden shadow-sm border-2 transition-all ${testimonial.approved ? 'border-green-200' : 'border-yellow-200'
+                                    }`}
                             >
-                                <div className="flex flex-col md:flex-row justify-between gap-4">
-                                    <div className="flex-grow">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <span className={`px-2 py-0.5 text-xs rounded-full border ${testimonial.approved ? 'bg-green-50 text-green-700 border-green-100' : 'bg-yellow-50 text-yellow-700 border-yellow-100'}`}>
-                                                {testimonial.approved ? 'Approved' : 'Pending Review'}
-                                            </span>
-                                            <span className="text-xs text-gray-400">
-                                                {new Date(testimonial.created_at).toLocaleDateString()}
-                                            </span>
-                                            <span className="text-xs font-medium text-gray-500 px-2 py-0.5 bg-gray-100 rounded">
-                                                {testimonial.category}
-                                            </span>
-                                        </div>
+                                {/* Image */}
+                                {testimonial.image_url ? (
+                                    <div className="aspect-[4/3] bg-gray-100 overflow-hidden">
+                                        <img
+                                            src={testimonial.image_url}
+                                            alt={testimonial.title || 'Testimonial'}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="aspect-[4/3] bg-gray-100 flex items-center justify-center">
+                                        <Image className="w-12 h-12 text-gray-300" />
+                                    </div>
+                                )}
 
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <h3 className="font-bold text-gray-800">{testimonial.name}</h3>
-                                            {testimonial.role && <span className="text-sm text-gray-500">- {testimonial.role}</span>}
-                                        </div>
-
-                                        <div className="flex items-center gap-1 mb-3">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star
-                                                    key={i}
-                                                    className={`w-4 h-4 ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`}
-                                                />
-                                            ))}
-                                        </div>
-
-                                        <p className="text-gray-600 italic">"{testimonial.content}"</p>
+                                <div className="p-4">
+                                    {/* Status Badge */}
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className={`px-2 py-0.5 text-xs rounded-full border ${testimonial.approved
+                                                ? 'bg-green-50 text-green-700 border-green-100'
+                                                : 'bg-yellow-50 text-yellow-700 border-yellow-100'
+                                            }`}>
+                                            {testimonial.approved ? 'Approved' : 'Pending'}
+                                        </span>
+                                        <span className="text-xs text-gray-400">
+                                            {new Date(testimonial.created_at).toLocaleDateString()}
+                                        </span>
                                     </div>
 
-                                    <div className="flex md:flex-col gap-2 min-w-[120px] justify-end md:justify-center border-t md:border-t-0 md:border-l border-gray-100 pt-3 md:pt-0 md:pl-4">
+                                    {/* Title & Description */}
+                                    <h3 className="font-bold text-gray-900 mb-1 line-clamp-1">
+                                        {testimonial.title || testimonial.name || 'Untitled'}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+                                        {testimonial.description || testimonial.content || 'No description'}
+                                    </p>
+
+                                    {/* Actions */}
+                                    <div className="flex gap-2">
+                                        {/* Edit Button */}
+                                        <button
+                                            onClick={() => handleEdit(testimonial)}
+                                            disabled={isProcessing === testimonial.id}
+                                            className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
+                                            title="Edit"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+
                                         {!testimonial.approved ? (
                                             <button
                                                 onClick={() => handleApprove(testimonial.id)}
                                                 disabled={isProcessing === testimonial.id}
-                                                className="flex-1 bg-green-50 text-green-600 hover:bg-green-100 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                                className="flex-1 bg-green-50 text-green-600 hover:bg-green-100 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-1"
                                             >
                                                 <Check className="w-4 h-4" /> Approve
                                             </button>
@@ -329,7 +472,7 @@ const TestimonialsManager: React.FC<TestimonialsManagerProps> = ({ onBack }) => 
                                             <button
                                                 onClick={() => handleUnapprove(testimonial.id)}
                                                 disabled={isProcessing === testimonial.id}
-                                                className="flex-1 bg-yellow-50 text-yellow-600 hover:bg-yellow-100 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                                className="flex-1 bg-yellow-50 text-yellow-600 hover:bg-yellow-100 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-1"
                                             >
                                                 <X className="w-4 h-4" /> Hide
                                             </button>
@@ -338,9 +481,10 @@ const TestimonialsManager: React.FC<TestimonialsManagerProps> = ({ onBack }) => 
                                         <button
                                             onClick={() => handleDelete(testimonial.id)}
                                             disabled={isProcessing === testimonial.id}
-                                            className="flex-1 bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                            className="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center justify-center"
+                                            title="Delete"
                                         >
-                                            <Trash2 className="w-4 h-4" /> Delete
+                                            <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
                                 </div>

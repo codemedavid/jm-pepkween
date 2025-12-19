@@ -3,13 +3,17 @@ import { supabase } from '../lib/supabase';
 
 export interface Testimonial {
     id: number;
-    name: string;
-    role: string | null;
-    content: string;
-    rating: number;
-    category: string;
-    date: string;
-    image_url?: string | null;
+    // New screenshot-based fields
+    title: string;
+    description: string;
+    image_url: string;
+    // Legacy fields for backwards compatibility
+    name?: string;
+    role?: string | null;
+    content?: string;
+    rating?: number;
+    category?: string;
+    date?: string;
     approved: boolean;
     created_at: string;
 }
@@ -107,11 +111,33 @@ export function useTestimonials(approvedOnly = true) {
         }
     };
 
+    const updateTestimonial = async (id: number, updates: Partial<Omit<Testimonial, 'id' | 'created_at'>>) => {
+        try {
+            const { error } = await supabase
+                .from('testimonials')
+                .update(updates)
+                .eq('id', id);
+
+            if (error) throw error;
+
+            // Update local state
+            setTestimonials(prev => prev.map(t =>
+                t.id === id ? { ...t, ...updates } : t
+            ));
+
+            return { success: true };
+        } catch (err) {
+            console.error('Error updating testimonial:', err);
+            return { success: false, error: err };
+        }
+    };
+
     return {
         testimonials,
         loading,
         error,
         addTestimonial,
+        updateTestimonial,
         updateTestimonialStatus,
         deleteTestimonial,
         refreshTestimonials: fetchTestimonials
