@@ -33,7 +33,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
 
   // Payment
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
-  const [contactMethod, setContactMethod] = useState<'whatsapp' | ''>('whatsapp');
+  const [contactMethod, setContactMethod] = useState<'facebook' | ''>('facebook');
   const [notes, setNotes] = useState('');
 
 
@@ -166,7 +166,7 @@ const Checkout: React.FC<CheckoutProps> = ({ cartItems, totalPrice, onBack }) =>
 
 
     if (!contactMethod) {
-      alert('Please select your preferred contact method (WhatsApp).');
+      alert('Please select your preferred contact method (Facebook).');
       return;
     }
 
@@ -322,7 +322,7 @@ ${paymentMethod ? `Account: ${paymentMethod.account_number}` : ''}
 Please attach your payment screenshot when sending this message.
 
 📱 CONTACT METHOD
-WhatsApp: https://api.whatsapp.com/send?phone=639471689758
+Facebook: https://www.facebook.com/share/14P3ALcWDEP/
 
 📋 ORDER NUMBER: #${orderData.order_number || orderData.id}
 
@@ -333,8 +333,8 @@ Please confirm this order. Thank you!
       setOrderMessage(orderDetails);
 
       // Open contact method based on selection
-      const contactUrl = contactMethod === 'whatsapp'
-        ? `https://api.whatsapp.com/send?phone=639471689758&text=${encodeURIComponent(orderDetails)}`
+      const contactUrl = contactMethod === 'facebook'
+        ? `https://www.facebook.com/share/14P3ALcWDEP/`
         : null;
 
       // Auto-copy to clipboard before opening, handling potential errors silently
@@ -390,14 +390,14 @@ Please confirm this order. Thank you!
       await navigator.clipboard.writeText(orderMessage);
       setCopied(true);
       setTimeout(() => setCopied(false), 3000);
-      alert("Order details copied! You can now paste them in WhatsApp.");
+      alert("Order details copied! You can now paste them in Facebook Messenger.");
     } catch (e) {
       console.warn("Copy failed", e);
     }
 
     const encodedMessage = encodeURIComponent(orderMessage);
-    const contactUrl = contactMethod === 'whatsapp'
-      ? `https://api.whatsapp.com/send?phone=639471689758&text=${encodedMessage}`
+    const contactUrl = contactMethod === 'facebook'
+      ? `https://www.facebook.com/share/14P3ALcWDEP/`
       : null;
 
     if (contactUrl) {
@@ -417,7 +417,7 @@ Please confirm this order. Thank you!
               COMPLETE YOUR ORDER
             </h1>
             <p className="text-gray-600 mb-8 text-base md:text-lg leading-relaxed">
-              Copy the order message below and send it via WhatsApp along with your payment screenshot.
+              Copy the order message below and send it via Facebook Messenger along with your payment screenshot.
             </p>
 
             {/* Order Message Display */}
@@ -452,7 +452,7 @@ Please confirm this order. Thank you!
               {copied && (
                 <p className="text-green-600 text-sm mt-2 flex items-center gap-1">
                   <Check className="w-4 h-4" />
-                  Message copied to clipboard! Paste it in WhatsApp along with your payment screenshot.
+                  Message copied to clipboard! Paste it in Facebook Messenger along with your payment screenshot.
                 </p>
               )}
             </div>
@@ -461,15 +461,15 @@ Please confirm this order. Thank you!
             <div className="space-y-3 mb-8">
               <button
                 onClick={handleOpenContact}
-                className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-3 md:py-4 rounded-2xl font-bold text-base md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all flex items-center justify-center gap-2 border border-white/20"
+                className="w-full bg-[#1877F2] hover:bg-[#166fe5] text-white py-3 md:py-4 rounded-2xl font-bold text-base md:text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all flex items-center justify-center gap-2 border border-white/20"
               >
                 <MessageCircle className="w-5 h-5" />
-                Open WhatsApp
+                Open Facebook
               </button>
 
               {!contactOpened && (
                 <p className="text-sm text-gray-600">
-                  💡 If WhatsApp doesn't open, copy the message above and paste it manually
+                  💡 If Facebook doesn't open, copy the message above and paste it manually
                 </p>
               )}
             </div>
@@ -493,7 +493,7 @@ Please confirm this order. Thank you!
                 </li>
                 <li className="flex items-start gap-3">
                   <span className="text-2xl">4️⃣</span>
-                  <span>Tracking numbers are sent via WhatsApp from 11 PM onwards.</span>
+                  <span>Tracking numbers are sent via Facebook Messenger from 11 PM onwards.</span>
                 </li>
               </ul>
             </div>
@@ -947,21 +947,21 @@ Please confirm this order. Thank you!
             </h2>
             <div className="grid grid-cols-1 gap-3">
               <button
-                onClick={() => setContactMethod('whatsapp')}
-                className={`p-4 rounded-lg border-2 transition-all flex items-center justify-between ${contactMethod === 'whatsapp'
-                  ? 'border-[#25D366] bg-[#25D366]/5'
-                  : 'border-gray-200 hover:border-[#25D366]/50'
+                onClick={() => setContactMethod('facebook')}
+                className={`p-4 rounded-lg border-2 transition-all flex items-center justify-between ${contactMethod === 'facebook'
+                  ? 'border-[#1877F2] bg-[#1877F2]/5'
+                  : 'border-gray-200 hover:border-[#1877F2]/50'
                   }`}
               >
                 <div className="flex items-center gap-3">
-                  <MessageCircle className="w-6 h-6 text-[#25D366]" />
+                  <MessageCircle className="w-6 h-6 text-[#1877F2]" />
                   <div className="text-left">
-                    <p className="font-semibold text-gray-900">WhatsApp</p>
-                    <p className="text-sm text-gray-500">+63 947 168 9758</p>
+                    <p className="font-semibold text-gray-900">Facebook</p>
+                    <p className="text-sm text-gray-500">JM Pepkween</p>
                   </div>
                 </div>
-                {contactMethod === 'whatsapp' && (
-                  <div className="w-6 h-6 bg-[#25D366] rounded-full flex items-center justify-center">
+                {contactMethod === 'facebook' && (
+                  <div className="w-6 h-6 bg-[#1877F2] rounded-full flex items-center justify-center">
                     <span className="text-white text-xs font-bold">✓</span>
                   </div>
                 )}
