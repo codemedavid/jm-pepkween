@@ -322,7 +322,7 @@ ${paymentMethod ? `Account: ${paymentMethod.account_number}` : ''}
 Please attach your payment screenshot when sending this message.
 
 📱 CONTACT METHOD
-Facebook: https://www.facebook.com/share/14P3ALcWDEP/
+Facebook: https://www.facebook.com/share/1EvV7c8gsu/
 
 📋 ORDER NUMBER: #${orderData.order_number || orderData.id}
 
@@ -334,7 +334,7 @@ Please confirm this order. Thank you!
 
       // Open contact method based on selection
       const contactUrl = contactMethod === 'facebook'
-        ? `https://www.facebook.com/share/14P3ALcWDEP/`
+        ? `https://www.facebook.com/share/1EvV7c8gsu/`
         : null;
 
       // Auto-copy to clipboard before opening, handling potential errors silently
@@ -397,7 +397,7 @@ Please confirm this order. Thank you!
 
     const encodedMessage = encodeURIComponent(orderMessage);
     const contactUrl = contactMethod === 'facebook'
-      ? `https://www.facebook.com/share/14P3ALcWDEP/`
+      ? `https://www.facebook.com/share/1EvV7c8gsu/`
       : null;
 
     if (contactUrl) {
