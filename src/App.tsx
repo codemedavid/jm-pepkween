@@ -13,6 +13,9 @@ import AdminDashboard from './components/AdminDashboard';
 import Testimonials from './components/Testimonials';
 import FAQ from './components/FAQ';
 import COA from './components/COA';
+import Guide from './components/Guide';
+import TrackOrder from './components/TrackOrder';
+import Calculator from './components/Calculator';
 import PageLayout from './components/PageLayout';
 
 import { useMenu } from './hooks/useMenu';
@@ -107,6 +110,9 @@ function App() {
           <Route path="/faq" element={<FAQ />} />
           <Route path="/testimonials" element={<Testimonials />} />
           <Route path="/coa" element={<COA />} />
+          <Route path="/guide" element={<Guide />} />
+          <Route path="/track" element={<TrackOrder />} />
+          <Route path="/calculator" element={<Calculator />} />
         </Route>
       </Routes>
     </Router>

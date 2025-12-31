@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit, Trash2, Save, X, ArrowLeft, TrendingUp, Package, Users, FolderOpen, CreditCard, Sparkles, Layers, RefreshCw, Warehouse, ShoppingCart, MapPin, Ticket, HelpCircle, MessageSquare } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, ArrowLeft, TrendingUp, Package, Users, FolderOpen, CreditCard, Sparkles, Layers, RefreshCw, Warehouse, ShoppingCart, MapPin, Ticket, HelpCircle, MessageSquare, BookOpen } from 'lucide-react';
 import type { Product } from '../types';
 import { useMenu } from '../hooks/useMenu';
 import { useCategories } from '../hooks/useCategories';
@@ -14,6 +14,7 @@ import VoucherManager from './VoucherManager';
 import COAManager from './COAManager';
 import TestimonialsManager from './TestimonialsManager';
 import FAQManager from './FAQManager';
+import GuideManager from './GuideManager';
 
 
 const AdminDashboard: React.FC = () => {
@@ -24,7 +25,7 @@ const AdminDashboard: React.FC = () => {
   const [loginError, setLoginError] = useState('');
   const { products, loading, addProduct, updateProduct, deleteProduct, refreshProducts } = useMenu();
   const { categories } = useCategories();
-  const [currentView, setCurrentView] = useState<'dashboard' | 'products' | 'add' | 'edit' | 'categories' | 'payments' | 'inventory' | 'orders' | 'shipping' | 'vouchers' | 'coa' | 'faq' | 'testimonials'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'products' | 'add' | 'edit' | 'categories' | 'payments' | 'inventory' | 'orders' | 'shipping' | 'vouchers' | 'coa' | 'faq' | 'testimonials' | 'guides'>('dashboard');
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [managingVariationsProductId, setManagingVariationsProductId] = useState<string | null>(null);
@@ -186,6 +187,24 @@ const AdminDashboard: React.FC = () => {
     return (
       <div className="min-h-screen bg-theme-bg p-4 md:p-8">
         <TestimonialsManager onBack={() => setCurrentView('dashboard')} />
+      </div>
+    );
+  }
+
+  // Guides View
+  if (currentView === 'guides') {
+    return (
+      <div className="min-h-screen bg-theme-bg p-4 md:p-8">
+        <div className="max-w-4xl mx-auto">
+          <button
+            onClick={() => setCurrentView('dashboard')}
+            className="flex items-center gap-2 text-gray-600 hover:text-theme-accent mb-6 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </button>
+          <GuideManager />
+        </div>
       </div>
     );
   }
@@ -1412,6 +1431,15 @@ const AdminDashboard: React.FC = () => {
                     <HelpCircle className="h-4 w-4 text-cyan-600" />
                   </div>
                   <span className="text-sm font-medium text-gray-700">Manage FAQs</span>
+                </button>
+                <button
+                  onClick={() => setCurrentView('guides')}
+                  className="w-full flex items-center gap-3 p-2 text-left hover:bg-gray-50 rounded-lg transition-all"
+                >
+                  <div className="p-1.5 bg-indigo-50 rounded-lg">
+                    <BookOpen className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">Manage Guides</span>
                 </button>
 
               </div>

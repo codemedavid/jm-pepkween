@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Menu, X, MessageCircle } from 'lucide-react';
+import { ShoppingCart, Menu, X, MessageCircle, BookOpen, MapPin, Calculator } from 'lucide-react';
 
 interface HeaderProps {
   cartItemsCount: number;
@@ -70,6 +70,27 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                   className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
                 >
                   Testimonials
+                </a>
+
+                <a
+                  href="/guide"
+                  className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
+                >
+                  Guides
+                </a>
+
+                <a
+                  href="/track"
+                  className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
+                >
+                  Track Order
+                </a>
+
+                <a
+                  href="/calculator"
+                  className="text-sm font-medium text-gray-600 hover:text-theme-accent transition-colors"
+                >
+                  Calculator
                 </a>
 
                 <a
@@ -156,6 +177,33 @@ const Header: React.FC<HeaderProps> = ({ cartItemsCount, onCartClick, onMenuClic
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Testimonials
+                </a>
+
+                <a
+                  href="/guide"
+                  className="flex items-center gap-2 text-theme-text font-medium text-base hover:text-theme-accent transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <BookOpen className="w-4 h-4" />
+                  Guides
+                </a>
+
+                <a
+                  href="/track"
+                  className="flex items-center gap-2 text-theme-text font-medium text-base hover:text-theme-accent transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <MapPin className="w-4 h-4" />
+                  Track Order
+                </a>
+
+                <a
+                  href="/calculator"
+                  className="flex items-center gap-2 text-theme-text font-medium text-base hover:text-theme-accent transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Calculator className="w-4 h-4" />
+                  Calculator
                 </a>
 
 
